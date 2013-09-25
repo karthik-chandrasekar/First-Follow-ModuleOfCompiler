@@ -72,13 +72,14 @@ void cleanInput(int count)
 //Inputs can have multiple statements in a single statement separated by # and ## and the end of grammar. So properly put them in an array such that every single rule is separately stored. 
 
 	int rows_count = count;
-	int start_col = 0;	
+	int start_col;	
 	int end_col = 0;
 	int rule_count = 0;
 	int i,j;
 
 	for(i=0;i<rows_count;i++)
 	{
+		start_col =0;
 		for(j=0;;j++)
 		{
 			if(grammar_array[i][j] == '#')   //If we encounter # it is end of a rule
@@ -101,15 +102,20 @@ void copyToken(int row, int start_col, int end_col, int rule_count)
 	int count =0;
 	int i;
 	
+	cout<<"row  "<<" "<<row<<" "<<"start_col"<<" "<<start_col<<" "<<"end_col"<<" "<<end_col<<" "<<"rule_count"<<" "<<rule_count<<endl;;
+	
 	for(i=start_col;i<end_col;i++)
 	{
-		if (isspace(grammar_array[row][i]))
+		if (isspace((char)grammar_array[row][i]))
 		{
 			continue;
 		}
 		structured_input[rule_count][count] = grammar_array[row][i];
+		cout<< structured_input[rule_count][count];	
 		count ++;
 	}
+	structured_input[rule_count][count]= '\0';
+	cout<<endl;
 	
 }
 
@@ -121,7 +127,7 @@ int validateInput(int count)
 
    	isValidTerm = validateTerminals(count); 
 	isValidNonTerm = validateNonTerminals(count);
-	if (isValidTerm & isValidNonTerm)
+	if (isValidTerm && isValidNonTerm)
 		{
 		return 1;
 		}
