@@ -25,6 +25,8 @@ int main ()
 	isValid = validateInput(count);
 	if (isValid == 0)
 		cout << "Input is not valid"<<endl;
+	else
+		cout << "Input is valid"<<endl;
 	return 0;
 } 
 
@@ -61,7 +63,7 @@ void print_input_array(int count)
 		{
 			if (input_array[i][j] == '\0')
 				break;
-			cout<<"i "<<i<<"  "<<"j "<<j<<" "<<"value "<<input_array[i][j]<<" "<<endl;
+			//cout<<"i "<<i<<"  "<<"j "<<j<<" "<<"value "<<input_array[i][j]<<" "<<endl;
 		}
 	}
 }
@@ -96,10 +98,14 @@ void cleanInput(int count)
 
 void get_input_array(int row, int start_col, int end_col, int rule_count)
 {
-	int i,j;
-	for(i=start_col, j=0; i<end_col; i++,j++)
+	int i;
+	int j=0;
+	for(i=start_col; i<end_col; i++)
 	{
+		if (isspace(grammar_array[row][i]))		
+			continue;
 		input_array[rule_count][j] = grammar_array[row][i];	
+		j++;
 	}
 }
 
@@ -126,7 +132,6 @@ int validateTerminals(int count)
 {
 // Check if All terminals have some rule associated with it
 
-
 	string terminals;
 	int term = 0;
 	int i, j, k;
@@ -135,6 +140,9 @@ int validateTerminals(int count)
 
 	for(i=0;i<count;i++)
 	{
+		term = 0;
+		if (!(isalpha(terminals[i])))
+			continue;
 		for(j=0,k=0;j<count;j++)
 		{
 			//cout<<"terminal "<<terminals[i]<<" "<<"Input "<<input_array[j][k]<<" "<<"index "<<"i "<<i <<"j "<<j<<"k "<<k<<endl;
@@ -161,19 +169,26 @@ int validateNonTerminals(int count)
 	
 	for(i=0;i<count;i++)
 	{
-		for(j=0;j<count;j++)
+		non_term = 0;
+		if (!isalpha(non_terminal[i]))
+			continue;
+		for(j=2;j<count;j++)
 		{
-			for(k=0;;k++)
+			for(k=3;;k++)
 			{
-				//cout<<"terminal "<<terminals[i]<<" "<<"Input "<<input_array[j][k]<<" "<<"index "<<"i "<<i <<"j "<<j<<"k "<<k<<endl;
 				if (input_array[j][k] == '\0')
 					break;
+				if (!(isalpha(input_array[j][k])))
+					continue;
+				//cout<<"terminal "<<non_terminal[i]<<" "<<"Input "<<input_array[j][k]<<" "<<"index "<<"i "<<i <<"j "<<j<<"k "<<k<<endl;
 				if (non_terminal[i] == input_array[j][k])
 				{
 					non_term = 1;
 					break;
 				}
 			}
+			if (non_term == 1)
+				break;
 		}
 		if (non_term ==0)
 			return 0;
