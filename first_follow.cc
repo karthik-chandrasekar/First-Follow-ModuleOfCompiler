@@ -5,14 +5,14 @@ using namespace std;
 
 int getInput();
 void cleanInput(int);
-void copyToken(int, int, int, int);
-void printStructuredInput(int);
+void get_input_array(int, int, int, int);
+void print_input_array(int);
 int validateInput(int);
 int validateTerminals(int);
 int validateNonTerminals(int);
 
 string grammar_array[100];
-string structured_input[100];
+char input_array[100][100];
 
 int main () 
 {
@@ -21,7 +21,7 @@ int main ()
 
 	count = getInput();
 	cleanInput(count);
-	printStructuredInput(count); 
+	print_input_array(count); 
 	isValid = validateInput(count);
 	if (isValid == 0)
 		cout << "Input is not valid"<<endl;
@@ -51,7 +51,7 @@ int getInput()
 	return count;
 }
 
-void printStructuredInput(int count)
+void print_input_array(int count)
 {
 //Just print the array
 	int i,j;
@@ -59,12 +59,11 @@ void printStructuredInput(int count)
 	{
 		for (j=0;;j++)
 		{
-			if (structured_input[i][j] == '\0')
+			if (input_array[i][j] == '\0')
 				break;
-			cout<<"i "<<i<<"  "<<"j "<<j<<" "<<"value "<<structured_input[i][j]<<" "<<endl;
+			cout<<"i "<<i<<"  "<<"j "<<j<<" "<<"value "<<input_array[i][j]<<" "<<endl;
 		}
 	}
-
 }
 
 void cleanInput(int count)
@@ -85,39 +84,25 @@ void cleanInput(int count)
 			if(grammar_array[i][j] == '#')   //If we encounter # it is end of a rule
 			{
 				end_col = j;
-				copyToken(i,start_col, end_col, rule_count);
+				get_input_array(i,start_col, end_col, rule_count);
 				rule_count += 1;
 				start_col = end_col;
 				break;
 			}
-		
 		}
 	}
 }
 
 
-void copyToken(int row, int start_col, int end_col, int rule_count)
+void get_input_array(int row, int start_col, int end_col, int rule_count)
 {
-//Utility function to copy string from the given start and end index values
-	int count =0;
-	int i;
-	
-	cout<<"row  "<<" "<<row<<" "<<"start_col"<<" "<<start_col<<" "<<"end_col"<<" "<<end_col<<" "<<"rule_count"<<" "<<rule_count<<endl;;
-	
-	for(i=start_col;i<end_col;i++)
+	int i,j;
+	for(i=start_col, j=0; i<end_col; i++,j++)
 	{
-		if (isspace((char)grammar_array[row][i]))
-		{
-			continue;
-		}
-		structured_input[rule_count][count] = grammar_array[row][i];
-		cout<< structured_input[rule_count][count];	
-		count ++;
+		input_array[rule_count][j] = grammar_array[row][i];	
 	}
-	structured_input[rule_count][count]= '\0';
-	cout<<endl;
-	
 }
+
 
 int validateInput(int count)
 {
@@ -146,14 +131,14 @@ int validateTerminals(int count)
 	int term = 0;
 	int i, j, k;
 	
-	terminals = structured_input[0];
+	terminals = input_array[0];
 
 	for(i=0;i<count;i++)
 	{
 		for(j=0,k=0;j<count;j++)
 		{
-			//cout<<"terminal "<<terminals[i]<<" "<<"Input "<<structured_input[j][k]<<" "<<"index "<<"i "<<i <<"j "<<j<<"k "<<k<<endl;
-			if (terminals[i] == structured_input[j][k])
+			//cout<<"terminal "<<terminals[i]<<" "<<"Input "<<input_array[j][k]<<" "<<"index "<<"i "<<i <<"j "<<j<<"k "<<k<<endl;
+			if (terminals[i] == input_array[j][k])
 			   {		
 				term = 1;
 				break;
@@ -172,7 +157,7 @@ int validateNonTerminals(int count)
 	int non_term = 0;
 	int i, j, k;
 
-	non_terminal = structured_input[1];
+	non_terminal = input_array[1];
 	
 	for(i=0;i<count;i++)
 	{
@@ -180,10 +165,10 @@ int validateNonTerminals(int count)
 		{
 			for(k=0;;k++)
 			{
-				//cout<<"terminal "<<terminals[i]<<" "<<"Input "<<structured_input[j][k]<<" "<<"index "<<"i "<<i <<"j "<<j<<"k "<<k<<endl;
-				if (structured_input[j][k] == '\0')
+				//cout<<"terminal "<<terminals[i]<<" "<<"Input "<<input_array[j][k]<<" "<<"index "<<"i "<<i <<"j "<<j<<"k "<<k<<endl;
+				if (input_array[j][k] == '\0')
 					break;
-				if (non_terminal[i] == structured_input[j][k])
+				if (non_terminal[i] == input_array[j][k])
 				{
 					non_term = 1;
 					break;
