@@ -1,18 +1,35 @@
 #include <iostream>
 #include <string>
+#include <algorithm>
+#include <vector>
+#include <set>
+#include <map>
 
 using namespace std; 
 
 int getInput();
+void printGrammarArray(int);
 void cleanInput(int);
 void get_input_array(int, int, int, int);
+void fill_rules_map(int, int, int, int);
 void print_input_array(int);
+void print_rules_map();
 int validateInput(int);
 int validateTerminals(int);
 int validateNonTerminals(int);
+void fillTerminalSet();
+void fillNonTerminalSet();
+void printTerminalSet();
+void printNonTerminalSet();
+
 
 string grammar_array[100];
 char input_array[100][100];
+set <char> terminal_set;
+set <char> non_terminal_set;
+set<char>::iterator it;
+map<char, string> rules_map;
+map<char, string>::iterator rules_map_it;
 
 int main () 
 {
@@ -27,6 +44,9 @@ int main ()
 		cout << "Input is not valid"<<endl;
 	else
 		cout << "Input is valid"<<endl;
+	print_rules_map();
+	fillTerminalSet();
+	fillNonTerminalSet();
 	return 0;
 } 
 
@@ -45,12 +65,17 @@ int getInput()
 		grammar_array[count] = line;
 		count++;	
 	}
+	printGrammarArray(count);
+	return count;
+}
 
+void printGrammarArray(int count)
+{
+	int i=0;
 	for(i=0;i < count; i++)
 	{	
 		cout << "Grammar specification" << "  " <<grammar_array[i]<<endl;
 	}
-	return count;
 }
 
 void print_input_array(int count)
@@ -59,12 +84,23 @@ void print_input_array(int count)
 	int i,j;
 	for (i=0;i< count; i++)
 	{
+
 		for (j=0;;j++)
 		{
 			if (input_array[i][j] == '\0')
 				break;
 			//cout<<"i "<<i<<"  "<<"j "<<j<<" "<<"value "<<input_array[i][j]<<" "<<endl;
 		}
+	}
+}
+
+void print_rules_map()
+{
+//Just print  rules map
+	cout<<"Printing rules map"<<endl;
+	for(rules_map_it=rules_map.begin();rules_map_it!=rules_map.end();rules_map_it++)
+	{
+	 	cout<<(*rules_map_it).first<<"----->"<<(*rules_map_it).second<<endl;
 	}
 }
 
@@ -107,6 +143,21 @@ void get_input_array(int row, int start_col, int end_col, int rule_count)
 		input_array[rule_count][j] = grammar_array[row][i];	
 		j++;
 	}
+	fill_rules_map(row, start_col, end_col, rule_count);
+}
+
+void fill_rules_map(int row, int start_col, int end_col, int rule_count)
+{
+	string rule_value;
+	char rule_value_array[10];
+	int i, j;
+
+	for(i=start_col+3,j=0;i<end_col;i++,j++)
+	{
+		rule_value_array[j] = grammar_array[row][i];		
+	}
+	rule_value_array[j] = '\0';
+	rules_map[grammar_array[row][0]] = rule_value_array;
 }
 
 
@@ -196,4 +247,47 @@ int validateNonTerminals(int count)
 	return 1;
 }
 
+void fillTerminalSet()
+{
+	int i=0;
+	for(i=0;;i++)
+	{
+		if(input_array[0][i] == '\0')
+			break;
+		terminal_set.insert(input_array[0][i]);
+	}
+	printTerminalSet();
+}
+
+void printTerminalSet()
+{
+	cout<<"printing terminal set"<<endl;
+	for(it=terminal_set.begin();it!=terminal_set.end();++it)
+	{
+		cout<<*it<<endl;
+	}	
+}
+
+void fillNonTerminalSet()
+{
+	int i=0;
+	for(i=0;;i++)
+	{
+		if(input_array[0][i] == '\0')
+			break;
+		non_terminal_set.insert(input_array[1][i]);
+	}
+	printNonTerminalSet();	
+}
+
+void printNonTerminalSet()
+{
+	cout<<"printing Non terminal set"<<endl;
+	for(it=non_terminal_set.begin();it!=non_terminal_set.end();++it)
+	{
+		cout<<*it<<endl;
+	}	
+}
+
+//TODO
 //Input getting part need to be revisited for sure. 
