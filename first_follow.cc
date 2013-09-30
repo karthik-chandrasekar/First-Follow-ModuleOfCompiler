@@ -4,37 +4,66 @@
 #include <vector>
 #include <set>
 #include <map>
+#include <list>
 
 using namespace std; 
+
+
+//FUNCTIONS;
 
 int getInput();
 void printGrammarArray(int);
 void cleanInput(int);
 void get_input_array(int, int, int, int);
 void fill_rules_map(int, int, int, int);
+
 void print_input_array(int);
 void print_rules_map();
 void print_rules_string_map();
-int validateInput(int);
-int validateTerminals(int);
-int validateNonTerminals(int);
-void fillTerminalSet();
-void fillNonTerminalSet();
-void printTerminalSet();
-void printNonTerminalSet();
 
+void validateInput(int);
+
+void fill_terminal_list();
+void fill_non_terminal_list();
+void print_terminal_list();
+void print_non_terminal_list();
+
+
+void validateErrorCode0(int);
+void validateErrorCode1(int);
+void validateErrorCode2();
+void validateErrorCode3();
+void validateErrorCode4(int);
+void checkForError();
+
+
+
+//GLOBAL DATA STRUCTURES
 
 string grammar_array[100];
 char input_array[100][100];
-set <char> terminal_set;
-set <char> non_terminal_set;
-set<char>::iterator it;
+
+//SET 
 set<string> rules_string_set;
 set<string>:: iterator rules_string_set_it;
+set<int> error_set;
+set<int>::iterator error_set_it;
+set<char> rules_key_set;
+set<char> terminal_set;
+set<char> non_terminal_set;
+set<char>:: iterator set_it;
+
+//MAP
 map<char, string> rules_map;
 map<char, string>::iterator rules_map_it;
 map<char, set<string> > rules_string_map;
 map<char, set<string> >:: iterator rules_string_map_it;
+
+//LIST
+list<char> terminal_list;
+list<char> non_terminal_list;
+list<char>::iterator list_it;
+
 
 int main () 
 {
@@ -43,15 +72,15 @@ int main ()
 
 	count = getInput();
 	cleanInput(count);
-	print_input_array(count); 
-	isValid = validateInput(count);
-	if (isValid == 0)
-		cout << "Input is not valid"<<endl;
-	else
-		cout << "Input is valid"<<endl;
+	print_input_array(count);
+	fill_terminal_list();
+	fill_non_terminal_list();
+	
+	//Validation Part 
+	validateInput(count);
+	checkForError();
 	print_rules_string_map();
-	fillTerminalSet();
-	fillNonTerminalSet();
+
 	return 0;
 } 
 
@@ -174,7 +203,6 @@ void get_input_array(int row, int start_col, int end_col, int rule_count)
 
 void fill_rules_map(int row, int start_col, int end_col, int rule_count)
 {
-	cout<< "Rule count"<<" "<<rule_count<<endl;
 	string rule_value;
 	char rule_value_array[10];
 	int i, j;
@@ -210,27 +238,33 @@ void fill_rules_map(int row, int start_col, int end_col, int rule_count)
 }
 
 
-int validateInput(int count)
+void  validateInput(int count)
 {
 // Validate whether the entered input is proper
-	int isValidTerm;
-	int isValidNonTerm;
 
-   	isValidTerm = validateTerminals(count); 
-	isValidNonTerm = validateNonTerminals(count);
-	if (isValidTerm && isValidNonTerm)
-		{
-		return 1;
-		}
-	else
-		{
-		return 0;
-		}
+   	validateErrorCode4(count); 
+	validateErrorCode1(count);
+	validateErrorCode3();
+	validateErrorCode2();
 }
 
-int validateTerminals(int count)
+void checkForError()
 {
-// Check if All terminals have some rule associated with it
+//Analyse error_set and display errors and terminate the program execution
+	
+	int to_stop_execution = 0;
+	for(error_set_it = error_set.begin();error_set_it != error_set.end(); error_set_it++)
+	{
+		cout<<"ERROR CODE : "<< *(error_set_it)<<endl;
+		to_stop_execution = 1;
+	}
+	if (to_stop_execution == 1)
+		exit(0);
+}
+
+void validateErrorCode4(int count)
+{
+// Check for ERROR  4
 
 	string terminals;
 	int term = 0;
@@ -252,15 +286,14 @@ int validateTerminals(int count)
 				break;
 			   }
 		}
-
 		if(term ==0 )
-			return 0;
+			error_set.insert(4);
 	}
-	return 1;
 }
 
-int validateNonTerminals(int count)
+void validateErrorCode1(int count)
 {
+	//Check for error code 1
 	string non_terminal;
 	int non_term = 0;
 	int i, j, k;
@@ -291,52 +324,106 @@ int validateNonTerminals(int count)
 				break;
 		}
 		if (non_term ==0)
-			return 0;
+			error_set.insert(1);
 	}
-	return 1;
 }
 
-void fillTerminalSet()
+void getRulesKeySet()
+{
+//Generate rules key set
+	for(rules_string_map_it = rules_string_map.begin(); rules_string_map_it != rules_string_map.end(); rules_string_map_it++)
+		{
+			rules_key_set.insert((*rules_string_map_it).first);
+			cout << (*rules_string_map_it).first<< " ";
+		}
+		cout<<endl;
+}
+
+void validateErrorCode3()
+{
+//check for error code 3 (i.e) If any terminal is on the left side of the rule. 
+	getRulesKeySet();
+	cout<< "Rule set : ";	
+	for(list_it=terminal_list.begin(); list_it!=terminal_list.end(); list_it++)
+	{
+		if (rules_key_set.count(*list_it) >= 1)
+			{
+				error_set.insert(3);
+			}
+	cout<<*list_it<<" ";
+	}
+	cout<<endl;
+}
+
+void validateErrorCode2()
+{
+	string temp;
+	int i;
+	for(rules_string_map_it = rules_string_map.begin(); rules_string_map_it != rules_string_map.end(); rules_string_map_it++)
+	{
+		if(terminal_set.count((*rules_string_map_it).first) <= 0)
+			error_set.insert(2);
+		rules_string_set = (*rules_string_map_it).second;
+		for(rules_string_set_it=rules_string_set.begin(); rules_string_set_it!=rules_string_set.end(); rules_string_set_it++)
+		{
+			temp = *rules_string_set_it;
+			for(i=0;;i++)
+			{
+				if (temp[i]=='\0')
+					break;
+				if (terminal_set.count(temp[i]) <=0)
+					error_set.insert(2);
+			}
+		}
+	
+	}
+}
+
+void fill_terminal_list()
 {
 	int i=0;
 	for(i=0;;i++)
 	{
 		if(input_array[0][i] == '\0')
 			break;
+		terminal_list.push_back(input_array[0][i]);
 		terminal_set.insert(input_array[0][i]);
 	}
-	printTerminalSet();
+	print_terminal_list();
 }
 
-void printTerminalSet()
+void print_terminal_list()
 {
-	cout<<"printing terminal set"<<endl;
-	for(it=terminal_set.begin();it!=terminal_set.end();++it)
+	cout<<"printing terminal list"<<endl;
+	for(list_it=terminal_list.begin();list_it!=terminal_list.end();list_it++)
 	{
-		cout<<*it<<endl;
-	}	
+		cout<<*list_it<<endl;		
+	}
 }
 
-void fillNonTerminalSet()
+
+void fill_non_terminal_list()
 {
 	int i=0;
 	for(i=0;;i++)
 	{
 		if(input_array[0][i] == '\0')
 			break;
+		non_terminal_list.push_back(input_array[1][i]);
 		non_terminal_set.insert(input_array[1][i]);
 	}
-	printNonTerminalSet();	
+	print_non_terminal_list();
 }
 
-void printNonTerminalSet()
+void print_non_terminal_list()
 {
-	cout<<"printing Non terminal set"<<endl;
-	for(it=non_terminal_set.begin();it!=non_terminal_set.end();++it)
+	cout<<"printing non terminal list"<<endl;
+	for(list_it=non_terminal_list.begin();list_it!=non_terminal_list.end();++list_it)
 	{
-		cout<<*it<<endl;
-	}	
+		cout<<*list_it<<endl;
+	}
 }
+
 
 //TODO
 //Input getting part need to be revisited for sure. 
