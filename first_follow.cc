@@ -14,6 +14,7 @@ void get_input_array(int, int, int, int);
 void fill_rules_map(int, int, int, int);
 void print_input_array(int);
 void print_rules_map();
+void print_rules_string_map();
 int validateInput(int);
 int validateTerminals(int);
 int validateNonTerminals(int);
@@ -28,8 +29,12 @@ char input_array[100][100];
 set <char> terminal_set;
 set <char> non_terminal_set;
 set<char>::iterator it;
+set<string> rules_string_set;
+set<string>:: iterator rules_string_set_it;
 map<char, string> rules_map;
 map<char, string>::iterator rules_map_it;
+map<char, set<string> > rules_string_map;
+map<char, set<string> >:: iterator rules_string_map_it;
 
 int main () 
 {
@@ -44,7 +49,7 @@ int main ()
 		cout << "Input is not valid"<<endl;
 	else
 		cout << "Input is valid"<<endl;
-	print_rules_map();
+	print_rules_string_map();
 	fillTerminalSet();
 	fillNonTerminalSet();
 	return 0;
@@ -52,7 +57,7 @@ int main ()
 
 int getInput()
 {
-//Get the input.
+//Get the input per line. 
 
 	string line;
 	int i, count =0;
@@ -81,16 +86,18 @@ void printGrammarArray(int count)
 void print_input_array(int count)
 {
 //Just print the array
+	cout << "printing input array"<<endl;
 	int i,j;
 	for (i=0;i< count; i++)
 	{
-
 		for (j=0;;j++)
 		{
 			if (input_array[i][j] == '\0')
 				break;
 			//cout<<"i "<<i<<"  "<<"j "<<j<<" "<<"value "<<input_array[i][j]<<" "<<endl;
+			cout<<input_array[i][j]<<" ";
 		}
+		cout<<endl;
 	}
 }
 
@@ -100,7 +107,23 @@ void print_rules_map()
 	cout<<"Printing rules map"<<endl;
 	for(rules_map_it=rules_map.begin();rules_map_it!=rules_map.end();rules_map_it++)
 	{
-	 	cout<<(*rules_map_it).first<<"----->"<<(*rules_map_it).second<<endl;
+	 	cout<<(*rules_map_it).first<<"   "<<(*rules_map_it).second<<endl;
+	}
+}
+
+void print_rules_string_map()
+{
+//Just print  rules string map
+	cout<<"Printing rules map"<<endl;
+	for(rules_string_map_it=rules_string_map.begin();rules_string_map_it!=rules_string_map.end();rules_string_map_it++)
+	{
+	 	cout<<(*rules_string_map_it).first<<"   ";
+		rules_string_set = (*rules_string_map_it).second;
+		for(rules_string_set_it=rules_string_set.begin(); rules_string_set_it!=rules_string_set.end(); rules_string_set_it++)
+		{
+			cout<<*rules_string_set_it<<"  ";
+		}
+		cout<<endl;
 	}
 }
 
@@ -131,7 +154,6 @@ void cleanInput(int count)
 	}
 }
 
-
 void get_input_array(int row, int start_col, int end_col, int rule_count)
 {
 	int i;
@@ -143,21 +165,48 @@ void get_input_array(int row, int start_col, int end_col, int rule_count)
 		input_array[rule_count][j] = grammar_array[row][i];	
 		j++;
 	}
-	fill_rules_map(row, start_col, end_col, rule_count);
+	input_array[rule_count][j] = '\0';
+	if (row > 1)
+	{
+		fill_rules_map(row, start_col, end_col, rule_count);
+	}
 }
 
 void fill_rules_map(int row, int start_col, int end_col, int rule_count)
 {
+	cout<< "Rule count"<<" "<<rule_count<<endl;
 	string rule_value;
 	char rule_value_array[10];
 	int i, j;
 
-	for(i=start_col+3,j=0;i<end_col;i++,j++)
+	for(i=3,j=0;input_array[row][i] != '\0';i++,j++)
 	{
-		rule_value_array[j] = grammar_array[row][i];		
+		rule_value_array[j] = input_array[row][i];		
 	}
+
+	if(input_array[row][3] == '\0')
+	{
+		rule_value_array[j] = 'Z';
+		j++;
+	}
+
 	rule_value_array[j] = '\0';
-	rules_map[grammar_array[row][0]] = rule_value_array;
+
+	rules_map[input_array[row][0]] = rule_value_array;
+
+	if (rules_string_map.count(input_array[row][0]) == 0)
+	{
+		rules_string_set.insert(rule_value_array);
+		rules_string_map[input_array[row][0]] = rules_string_set;
+
+	}
+	else
+	{
+		rules_string_set = rules_string_map[input_array[row][0]];
+		rules_string_set.insert(rule_value_array);
+		rules_string_map[input_array[row][0]] = rules_string_set;
+	}
+	rules_string_set.clear();
 }
 
 
