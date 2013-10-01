@@ -37,8 +37,10 @@ void validateErrorCode3();
 void validateErrorCode4(int);
 void checkForError();
 
-void collectFirstSet()
-void findFirstSet()
+//FINDING FIRST SETS
+void collectFirstSet();
+void findFirstSet(char);
+void printFirstSet();
 
 //GLOBAL DATA STRUCTURES
 
@@ -61,8 +63,8 @@ map<char, string> rules_map;
 map<char, string>::iterator rules_map_it;
 map<char, set<string> > rules_string_map;
 map<char, set<string> >:: iterator rules_string_map_it;
-map<char, set<char>> first_set_map;
-map<char, set<char>> ::iterator first_set_map_it;
+map<char, set<char> > first_set_map;
+map<char, set<char> > ::iterator first_set_map_it;
 
 //LIST
 list<char> terminal_list;
@@ -271,9 +273,10 @@ void checkForError()
 void collectFirstSet()
 {
 // Collect first sets 		
-	for(list_it = non_terminal_list.end(); list_it!=non_terminal_list.begin(); it--)
+	for(list_it = non_terminal_list.end(); list_it!=non_terminal_list.begin(); list_it--)
 	{
-		findFirstSet(*it);		
+		findFirstSet(*list_it);	
+		printFirstSet();	
 	}
 }
 
@@ -282,16 +285,19 @@ void findFirstSet(char terminal_char)
 //Compute first set
 	
 	int to_break = 0;
+	int i;
+	string temp;
+	set<char> temp_set;
 
-	rules_string_map_it = rules_string_map.find(terminal_char)
-	rules_string_set = rules_string_map_it.second
-	for(rules_string_set_it=rules_string_set.begin();rules_string_set_it != rules_string_set.end(); rules_string_set++)
+	rules_string_map_it = rules_string_map.find(terminal_char);
+	rules_string_set = (*rules_string_map_it).second;
+	for(rules_string_set_it=rules_string_set.begin();rules_string_set_it != rules_string_set.end(); rules_string_set_it++)
 	{
 		temp = *rules_string_set_it;
 		for(i=0;temp[i]!='0';i++)
 		{
-			firs_set.clear();
-			if(terminal_list.count(temp[i]) > 0)
+			first_set.clear();
+			if(terminal_set.count(temp[i]) > 0)
 			{
 				
 				if(first_set_map.count(terminal_char) == 0)
@@ -312,7 +318,7 @@ void findFirstSet(char terminal_char)
 			{
 				//It is a  non terminal. Collect the first set of the non terminal (It is assumed that it has been calculated already) and append it with the first set of this non terminal. 
 				
-				if (first_set_map.count(temp[i]) == 0):
+				if (first_set_map.count(temp[i]) == 0)
 				{	//First set is already calculated for this non terminal
 					temp_set = first_set_map[temp[i]];
 					first_set.insert(temp_set.begin(), temp_set.end());
@@ -335,6 +341,25 @@ void findFirstSet(char terminal_char)
 		}
 	}			
 }
+
+void printFirstSet()
+{
+//Printing First set
+
+	for(first_set_map_it = first_set_map.begin();first_set_map_it != first_set_map.end(); first_set_map_it++)
+	{
+		cout<<"First set of "<<(*first_set_map_it).first<<endl;
+		cout<<"Values are"<<endl;
+		first_set = (*first_set_map_it).second;
+		for(set_it = first_set.begin(); set_it != first_set.end(); set_it++)
+		{
+			cout<<*set_it<< "  ";
+		}
+		cout<<endl;
+	}
+
+}
+
 
 void validateErrorCode4(int count)
 {
