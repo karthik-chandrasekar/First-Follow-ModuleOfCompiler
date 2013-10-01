@@ -27,7 +27,8 @@ void fill_terminal_list();
 void fill_non_terminal_list();
 void print_terminal_list();
 void print_non_terminal_list();
-
+void print_terminal_set();
+void print_non_terminal_set();
 
 void validateErrorCode0(int);
 void validateErrorCode1(int);
@@ -36,7 +37,8 @@ void validateErrorCode3();
 void validateErrorCode4(int);
 void checkForError();
 
-
+void collectFirstSet()
+void findFirstSet()
 
 //GLOBAL DATA STRUCTURES
 
@@ -52,12 +54,15 @@ set<char> rules_key_set;
 set<char> terminal_set;
 set<char> non_terminal_set;
 set<char>:: iterator set_it;
+set<char> first_set;
 
 //MAP
 map<char, string> rules_map;
 map<char, string>::iterator rules_map_it;
 map<char, set<string> > rules_string_map;
 map<char, set<string> >:: iterator rules_string_map_it;
+map<char, set<char>> first_set_map;
+map<char, set<char>> ::iterator first_set_map_it;
 
 //LIST
 list<char> terminal_list;
@@ -262,6 +267,75 @@ void checkForError()
 		exit(0);
 }
 
+
+void collectFirstSet()
+{
+// Collect first sets 		
+	for(list_it = non_terminal_list.end(); list_it!=non_terminal_list.begin(); it--)
+	{
+		findFirstSet(*it);		
+	}
+}
+
+void findFirstSet(char terminal_char)
+{
+//Compute first set
+	
+	int to_break = 0;
+
+	rules_string_map_it = rules_string_map.find(terminal_char)
+	rules_string_set = rules_string_map_it.second
+	for(rules_string_set_it=rules_string_set.begin();rules_string_set_it != rules_string_set.end(); rules_string_set++)
+	{
+		temp = *rules_string_set_it;
+		for(i=0;temp[i]!='0';i++)
+		{
+			firs_set.clear();
+			if(terminal_list.count(temp[i]) > 0)
+			{
+				
+				if(first_set_map.count(terminal_char) == 0)
+				{			
+					first_set.insert(temp[i]);
+					first_set_map[terminal_char] = first_set;	
+				}
+				else
+				{
+					first_set = first_set_map[terminal_char];
+					first_set.insert(temp[i]);
+					first_set_map[terminal_char] = first_set;	
+				}
+				to_break = 1;
+			}
+
+			else
+			{
+				//It is a  non terminal. Collect the first set of the non terminal (It is assumed that it has been calculated already) and append it with the first set of this non terminal. 
+				
+				if (first_set_map.count(temp[i]) == 0):
+				{	//First set is already calculated for this non terminal
+					temp_set = first_set_map[temp[i]];
+					first_set.insert(temp_set.begin(), temp_set.end());
+				}
+				
+				else
+				{
+					findFirstSet(temp[i]);
+					temp_set = first_set_map[temp[i]];
+				}			
+
+				
+				//check for the presence of epsilon in tempset and it if present, continue looping. Else break
+				if (temp_set.count('Z') != 0)
+					continue;
+				else
+					to_break =1;
+
+			}
+		}
+	}			
+}
+
 void validateErrorCode4(int count)
 {
 // Check for ERROR  4
@@ -289,6 +363,13 @@ void validateErrorCode4(int count)
 		if(term ==0 )
 			error_set.insert(4);
 	}
+}
+
+
+void validateErrorCode0()
+{
+//check for syntax error
+	cout << "validate error code 1 function is empty";		
 }
 
 void validateErrorCode1(int count)
@@ -343,14 +424,14 @@ void validateErrorCode3()
 {
 //check for error code 3 (i.e) If any terminal is on the left side of the rule. 
 	getRulesKeySet();
-	cout<< "Rule set : ";	
+	//cout<< "Rule set : ";	
 	for(list_it=terminal_list.begin(); list_it!=terminal_list.end(); list_it++)
 	{
 		if (rules_key_set.count(*list_it) >= 1)
 			{
 				error_set.insert(3);
 			}
-	cout<<*list_it<<" ";
+	//cout<<*list_it<<" ";
 	}
 	cout<<endl;
 }
@@ -361,8 +442,13 @@ void validateErrorCode2()
 	int i;
 	for(rules_string_map_it = rules_string_map.begin(); rules_string_map_it != rules_string_map.end(); rules_string_map_it++)
 	{
-		if(terminal_set.count((*rules_string_map_it).first) <= 0)
+		//Rules key check
+		if(non_terminal_set.count((*rules_string_map_it).first) == 0)
+			cout<<"Key accused"<<endl;
 			error_set.insert(2);
+			cout<<(*rules_string_map_it).first<<endl;
+
+		//Rules value check
 		rules_string_set = (*rules_string_map_it).second;
 		for(rules_string_set_it=rules_string_set.begin(); rules_string_set_it!=rules_string_set.end(); rules_string_set_it++)
 		{
@@ -371,8 +457,10 @@ void validateErrorCode2()
 			{
 				if (temp[i]=='\0')
 					break;
-				if (terminal_set.count(temp[i]) <=0)
+				if (terminal_set.count(temp[i]) == 0 && non_terminal_set.count(temp[i]==0))
 					error_set.insert(2);
+					cout<<"Rule accused of error  "<<endl;
+					cout<<temp[i]<<endl;
 			}
 		}
 	
@@ -389,7 +477,8 @@ void fill_terminal_list()
 		terminal_list.push_back(input_array[0][i]);
 		terminal_set.insert(input_array[0][i]);
 	}
-	print_terminal_list();
+	//print_terminal_list();
+	print_terminal_set();
 }
 
 void print_terminal_list()
@@ -402,6 +491,15 @@ void print_terminal_list()
 }
 
 
+void print_terminal_set()
+{
+	cout<<"Printing terminal set"<<endl;
+	for(set_it=terminal_set.begin();set_it!=terminal_set.end();set_it++)
+	{
+		cout<<*set_it<<endl;
+	}
+}
+
 void fill_non_terminal_list()
 {
 	int i=0;
@@ -412,7 +510,8 @@ void fill_non_terminal_list()
 		non_terminal_list.push_back(input_array[1][i]);
 		non_terminal_set.insert(input_array[1][i]);
 	}
-	print_non_terminal_list();
+	//print_non_terminal_list();
+	print_non_terminal_set();
 }
 
 void print_non_terminal_list()
@@ -424,6 +523,16 @@ void print_non_terminal_list()
 	}
 }
 
+void print_non_terminal_set()
+{
+	cout<<"printing non terminal set"<<endl;
+	for(set_it=non_terminal_set.begin();set_it!=non_terminal_set.end();set_it++)
+	{
+		cout<<*set_it<<endl;
+	}
+
+}
 
 //TODO
 //Input getting part need to be revisited for sure. 
+// Errorcode 2 and 0 has to be revisited
