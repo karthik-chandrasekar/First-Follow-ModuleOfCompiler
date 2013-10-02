@@ -44,7 +44,7 @@ void printFirstSet();
 
 //FINDING FOLLOW SETS:
 void collectFollowSet();
-void findFollowSet();
+void findFollowSet(char);
 void printFollowSet();
 
 //GLOBAL DATA STRUCTURES
@@ -279,7 +279,7 @@ void collectFirstSet()
 	printFirstSet();	
 }
 
-void findFirstSet(char terminal_char)
+void findFirstSet(char non_terminal_char)
 {
 //Compute first set
 	
@@ -289,16 +289,16 @@ void findFirstSet(char terminal_char)
 	set<char> temp_set;
 	int count = 0;
 
-	if (!(isalpha(terminal_char)))
+	if (!(isalpha(non_terminal_char)))
 		return;
 
-	if (!(rules_key_set.count(terminal_char)))
+	if (!(rules_key_set.count(non_terminal_char)))
 		return;
 
-	rules_string_map_it = rules_string_map.find(terminal_char);
+	rules_string_map_it = rules_string_map.find(non_terminal_char);
 	rules_string_set = (*rules_string_map_it).second;
 
-	cout << "find first set - BEGINSSSSS for   "<< terminal_char<<" "<<endl<<endl;
+	cout << "find first set - BEGINSSSSS for   "<< non_terminal_char<<" "<<endl<<endl;
 
 	for(rules_string_set_it=rules_string_set.begin();rules_string_set_it != rules_string_set.end(); rules_string_set_it++)
 	{
@@ -318,18 +318,18 @@ void findFirstSet(char terminal_char)
 			{
 				
 				cout << "Inside if" <<endl;	
-				if(first_set_map.count(terminal_char) == 0)
+				if(first_set_map.count(non_terminal_char) == 0)
 				{	
 					cout<< "First time seeing term - adding it"<<endl;
 					first_set.insert(temp[i]);
-					first_set_map[terminal_char] = first_set;	
+					first_set_map[non_terminal_char] = first_set;	
 				}
 				else
 				{
-					cout << "ALready first set is present for "<< terminal_char<<endl;
-					first_set = first_set_map[terminal_char];
+					cout << "ALready first set is present for "<< non_terminal_char<<endl;
+					first_set = first_set_map[non_terminal_char];
 					first_set.insert(temp[i]);
-					first_set_map[terminal_char] = first_set;	
+					first_set_map[non_terminal_char] = first_set;	
 				}
 				to_break = 1;
 			}
@@ -363,16 +363,16 @@ void findFirstSet(char terminal_char)
 							findFirstSet(temp[i]);
 							temp_set = first_set_map[temp[i]];
 						}
-						if(first_set_map.count(terminal_char) ==0 )
+						if(first_set_map.count(non_terminal_char) ==0 )
 						{
 							first_set.insert(temp_set.begin(), temp_set.end());
-							first_set_map[terminal_char] = first_set;
+							first_set_map[non_terminal_char] = first_set;
 						}
 						else
 						{
-							first_set = first_set_map[terminal_char];
+							first_set = first_set_map[non_terminal_char];
 							first_set.insert(temp_set.begin(), temp_set.end());
-							first_set_map[terminal_char] = first_set;
+							first_set_map[non_terminal_char] = first_set;
 						}
 					}	
 				}			
@@ -425,8 +425,39 @@ void collectFolloweSet()
 }
 
 
-void findFollowSet()
+void findFollowSet(char non_terminal_char)
 {
+//Compute follow set
+	rules_string_map_it = rules_string_map.find(non_terminal_char);
+	rules_string_set = (*rules_string_map_it).second;
+
+	cout<<"find follow set - BEGINSSSS for   "<< non_terminal_char<<endlendl;
+	
+	for(rules_string_set_it=rules_string_set.begin(); rules_string_set_it != rules_string_set.end(); rules_string_set++)
+	{
+		cout<< "Inside first for loop for follow set"<<endl;
+
+		temp = *rules_string_set_it
+		cout<< "Rule string is "<<temp<<endl;
+	
+		for(i=0;temp[i]!='\0';i++)
+		{
+			if (to_break ==1)
+				break;
+
+			cout<< "Inside second for loop for find follow set for "<<temp[i]" "<<endl;
+
+			if(terminal_set.count(temp[i]>0)
+			{
+				cout << "Inside if terminal"<, endl;
+
+				if(follow_set_map.count)
+			}
+
+		}
+
+	}
+	
 
 }
 
