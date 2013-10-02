@@ -18,7 +18,6 @@ void get_input_array(int, int, int, int);
 void fill_rules_map(int, int, int, int);
 
 void print_input_array(int);
-void print_rules_map();
 void print_rules_string_map();
 
 void validateInput(int);
@@ -87,6 +86,7 @@ int main ()
 	validateInput(count);
 	checkForError();
 	print_rules_string_map();
+	collectFirstSet();
 
 	return 0;
 } 
@@ -137,15 +137,6 @@ void print_input_array(int count)
 	}
 }
 
-void print_rules_map()
-{
-//Just print  rules map
-	cout<<"Printing rules map"<<endl;
-	for(rules_map_it=rules_map.begin();rules_map_it!=rules_map.end();rules_map_it++)
-	{
-	 	cout<<(*rules_map_it).first<<"   "<<(*rules_map_it).second<<endl;
-	}
-}
 
 void print_rules_string_map()
 {
@@ -266,18 +257,20 @@ void checkForError()
 		to_stop_execution = 1;
 	}
 	if (to_stop_execution == 1)
-		exit(0);
+		//exit(0);
+		cout << "The program shud have been terminated";
 }
 
 
 void collectFirstSet()
 {
 // Collect first sets 		
-	for(list_it = non_terminal_list.end(); list_it!=non_terminal_list.begin(); list_it--)
+	for(list_it = non_terminal_list.begin(); list_it!=non_terminal_list.end(); list_it++)
 	{
-		findFirstSet(*list_it);	
-		printFirstSet();	
+		cout<< "findFirstSet called for "<<*list_it<<endl;
+		findFirstSet(*list_it);
 	}
+	printFirstSet();	
 }
 
 void findFirstSet(char terminal_char)
@@ -288,25 +281,46 @@ void findFirstSet(char terminal_char)
 	int i;
 	string temp;
 	set<char> temp_set;
+	int count = 0;
+
+	if (!(isalpha(terminal_char)))
+		return;
+
+	if (!(rules_key_set.count(terminal_char)))
+		return;
 
 	rules_string_map_it = rules_string_map.find(terminal_char);
 	rules_string_set = (*rules_string_map_it).second;
+
+	cout << "find first set - BEGINSSSSS for   "<< terminal_char<<" "<<endl<<endl;
+
 	for(rules_string_set_it=rules_string_set.begin();rules_string_set_it != rules_string_set.end(); rules_string_set_it++)
 	{
+		cout<< "Inside first for loop of first set"<<endl;
+		
 		temp = *rules_string_set_it;
-		for(i=0;temp[i]!='0';i++)
+		cout << "Rule string is "<<temp<<endl;
+		for(i=0;temp[i]!='\0';i++)
 		{
+			if (to_break == 1)
+				break;
+			cout<< "Inside second for loop of find first set for "<<temp[i]<<"  "<<endl;
+			
 			first_set.clear();
+			temp_set.clear();
 			if(terminal_set.count(temp[i]) > 0)
 			{
 				
+				cout << "Inside if" <<endl;	
 				if(first_set_map.count(terminal_char) == 0)
-				{			
+				{	
+					cout<< "First time seeing term - adding it"<<endl;
 					first_set.insert(temp[i]);
 					first_set_map[terminal_char] = first_set;	
 				}
 				else
 				{
+					cout << "ALready first set is present for "<< terminal_char<<endl;
 					first_set = first_set_map[terminal_char];
 					first_set.insert(temp[i]);
 					first_set_map[terminal_char] = first_set;	
@@ -317,37 +331,69 @@ void findFirstSet(char terminal_char)
 			else
 			{
 				//It is a  non terminal. Collect the first set of the non terminal (It is assumed that it has been calculated already) and append it with the first set of this non terminal. 
-				
-				if (first_set_map.count(temp[i]) == 0)
-				{	//First set is already calculated for this non terminal
+			
+				cout << "Inside else" <<endl;	
+				if (first_set_map.count(temp[i]) > 0)
+				{		
+					cout << "Inside if - Right flow"<<endl;
+					//First set is already calculated for this non terminal
 					temp_set = first_set_map[temp[i]];
 					first_set.insert(temp_set.begin(), temp_set.end());
 				}
 				
 				else
 				{
-					findFirstSet(temp[i]);
-					temp_set = first_set_map[temp[i]];
+					if(isalpha(temp[i]))
+					{
+						cout<<"  "<<temp[i]<<" "<<"Recursive call - SUSPICIOUS- call "<<count <<endl<<endl;
+						count ++;
+						if (temp[i] == 'Z')
+						{
+							cout<< "Presence of Z is identified"<<endl;
+							temp_set.insert('Z');
+						}
+						else
+						{
+							findFirstSet(temp[i]);
+							temp_set = first_set_map[temp[i]];
+						}
+						if(first_set_map.count(terminal_char) ==0 )
+						{
+							first_set.insert(temp_set.begin(), temp_set.end());
+							first_set_map[terminal_char] = first_set;
+						}
+						else
+						{
+							first_set = first_set_map[terminal_char];
+							first_set.insert(temp_set.begin(), temp_set.end());
+							first_set_map[terminal_char] = first_set;
+						}
+					}	
 				}			
 
 				
 				//check for the presence of epsilon in tempset and it if present, continue looping. Else break
 				if (temp_set.count('Z') != 0)
+				{
+					cout<<"Z is present "<<endl;
 					continue;
+				}
 				else
 					to_break =1;
-
 			}
 		}
-	}			
+	}
+	cout<< "finding first set - Ends"<<endl<<endl;			
 }
 
 void printFirstSet()
 {
 //Printing First set
 
+	cout<< "Print first set - starts"<<endl<<endl;
 	for(first_set_map_it = first_set_map.begin();first_set_map_it != first_set_map.end(); first_set_map_it++)
 	{
+		
 		cout<<"First set of "<<(*first_set_map_it).first<<endl;
 		cout<<"Values are"<<endl;
 		first_set = (*first_set_map_it).second;
@@ -357,7 +403,7 @@ void printFirstSet()
 		}
 		cout<<endl;
 	}
-
+	cout << "Print first set - ends"<<endl<<endl;
 }
 
 
@@ -497,12 +543,12 @@ void fill_terminal_list()
 	int i=0;
 	for(i=0;;i++)
 	{
-		if(input_array[0][i] == '\0')
+		if(input_array[1][i] == '\0')
 			break;
-		terminal_list.push_back(input_array[0][i]);
-		terminal_set.insert(input_array[0][i]);
+		terminal_list.push_back(input_array[1][i]);
+		terminal_set.insert(input_array[1][i]);
 	}
-	//print_terminal_list();
+	print_terminal_list();
 	print_terminal_set();
 }
 
@@ -532,10 +578,10 @@ void fill_non_terminal_list()
 	{
 		if(input_array[0][i] == '\0')
 			break;
-		non_terminal_list.push_back(input_array[1][i]);
-		non_terminal_set.insert(input_array[1][i]);
+		non_terminal_list.push_back(input_array[0][i]);
+		non_terminal_set.insert(input_array[0][i]);
 	}
-	//print_non_terminal_list();
+	print_non_terminal_list();
 	print_non_terminal_set();
 }
 
