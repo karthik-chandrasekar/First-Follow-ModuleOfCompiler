@@ -41,6 +41,12 @@ void collectFirstSet();
 void findFirstSet(char);
 void printFirstSet();
 
+
+//FINDING FOLLOW SETS:
+void collectFollowSet();
+void findFollowSet();
+void printFollowSet();
+
 //GLOBAL DATA STRUCTURES
 
 string grammar_array[100];
@@ -406,6 +412,29 @@ void printFirstSet()
 	cout << "Print first set - ends"<<endl<<endl;
 }
 
+
+void collectFolloweSet()
+{
+//Collect follow sets
+	for(list_it = non_terminal_list.begin(); list_it != non_terminal_list.end(); list_it++)
+	{
+		cout<<"findFollowSet called for "<<*list_it<<endl;
+		findFollowSet(*list_it);
+	}
+	printFollowSet();
+}
+
+
+void findFollowSet()
+{
+
+}
+
+void printFollowSet()
+{
+
+
+}
 
 void validateErrorCode4(int count)
 {
