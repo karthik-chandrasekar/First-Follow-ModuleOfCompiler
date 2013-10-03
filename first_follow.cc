@@ -62,6 +62,8 @@ set<char> terminal_set;
 set<char> non_terminal_set;
 set<char>:: iterator set_it;
 set<char> first_set;
+set<char> follow_set;
+set<char> non_terminal_called_set;
 
 //MAP
 map<char, string> rules_map;
@@ -70,6 +72,8 @@ map<char, set<string> > rules_string_map;
 map<char, set<string> >:: iterator rules_string_map_it;
 map<char, set<char> > first_set_map;
 map<char, set<char> > ::iterator first_set_map_it;
+map<char, set<char> > follow_set_map;
+map<char, set<char> >:: iterator follow_set_map_it;
 
 //LIST
 list<char> terminal_list;
@@ -92,8 +96,8 @@ int main ()
 	validateInput(count);
 	checkForError();
 	print_rules_string_map();
-	collectFirstSet();
-
+	//collectFirstSet();
+	collectFollowSet();
 	return 0;
 } 
 
@@ -355,7 +359,7 @@ void findFirstSet(char non_terminal_char)
 						count ++;
 						if (temp[i] == 'Z')
 						{
-							cout<< "Presence of Z is identified"<<endl;
+							cout<< "Presence of epsilon (Z) is identified"<<endl;
 							temp_set.insert('Z');
 						}
 						else
@@ -413,12 +417,12 @@ void printFirstSet()
 }
 
 
-void collectFolloweSet()
+void collectFollowSet()
 {
 //Collect follow sets
 	for(list_it = non_terminal_list.begin(); list_it != non_terminal_list.end(); list_it++)
 	{
-		cout<<"findFollowSet called for "<<*list_it<<endl;
+		cout<<"collectFollowSet - findFollowSet called for "<<*list_it<<endl;
 		findFollowSet(*list_it);
 	}
 	printFollowSet();
@@ -427,44 +431,119 @@ void collectFolloweSet()
 
 void findFollowSet(char non_terminal_char)
 {
+
 //Compute follow set
+
+	//Local data structures
+
+	list<char> track_list;
+	int to_break =0, i=0;
+	string temp;
+	char prev_char;
+
+	if (!(isalpha(non_terminal_char)))
+		return;
+
+	if (!(rules_key_set.count(non_terminal_char)))
+		return;
+
+	if (non_terminal_called_set.count(non_terminal_char)>0)
+		return;
+
+	non_terminal_called_set.insert(non_terminal_char);	
+
 	rules_string_map_it = rules_string_map.find(non_terminal_char);
 	rules_string_set = (*rules_string_map_it).second;
 
-	cout<<"find follow set - BEGINSSSS for   "<< non_terminal_char<<endlendl;
+	cout<<"find follow set - BEGINSSSS for   "<< non_terminal_char<<endl<<endl;
 	
-	for(rules_string_set_it=rules_string_set.begin(); rules_string_set_it != rules_string_set.end(); rules_string_set++)
+	for(rules_string_set_it=rules_string_set.begin(); rules_string_set_it != rules_string_set.end(); rules_string_set_it++)
 	{
-		cout<< "Inside first for loop for follow set"<<endl;
+		cout<< "Inside first for loop for follow set for"<<endl;
 
-		temp = *rules_string_set_it
+		temp = *rules_string_set_it;
 		cout<< "Rule string is "<<temp<<endl;
+	
+		track_list.clear();
+		follow_set.clear();
 	
 		for(i=0;temp[i]!='\0';i++)
 		{
 			if (to_break ==1)
 				break;
 
-			cout<< "Inside second for loop for find follow set for "<<temp[i]" "<<endl;
-
-			if(terminal_set.count(temp[i]>0)
+			cout<< "Inside second for loop for find follow set for "<<temp[i]<<" "<<endl;
+	
+			if(terminal_set.count(temp[i])>0)
 			{
-				cout << "Inside if terminal"<, endl;
+				cout << "Inside  terminal body"<<endl;
+				//If it is terminal, check the previous character. If it is terminal, add the current terminal in the follow set of the prev terminal char. 
+				if(track_list.size() >0)
+				{
+					cout<< "Inside track list"<<endl;
 
-				if(follow_set_map.count)
+					prev_char = track_list.back();
+					cout<< "Prev char is "<<prev_char<<endl;
+					if (non_terminal_set.count(prev_char) > 0)
+					{
+						follow_set.insert(temp[i]);
+						follow_set_map[prev_char] = follow_set;
+						cout<<"Added follow set for "<<prev_char<<" "<<"is"<<endl;
+					}
+				}
+			}
+			else
+			{
+				//It is a non-terminal char. Now collect the follow set of this char. Make recursive call.
+
+
+				if(temp[i] == 'Z')
+				{
+					cout<<"Presence of epsilon (Z) is identified"<<endl;
+				}
+
+				if(non_terminal_called_set.count(temp[i])>0)
+				{
+					cout<< "Already called recursion call for this non terminal "<<temp[i]<<endl;
+				}
+
+				else if(isalpha(temp[i]))
+				{
+					cout<<endl<<endl;
+					cout<< "It is a non terminal so making recursive call for "<<non_terminal_char<<endl;
+					findFollowSet(temp[i]);
+					cout<<"Out of recursion call for "<<non_terminal_char<<endl<<endl;
+				}
+			}
+
+			track_list.push_back(temp[i]);
+
+			if (follow_set.count('Z') != 0)
+			{
+				cout<<"Z is present "<<endl;
+				continue;
 			}
 
 		}
-
+		temp = " ";
 	}
-	
-
 }
 
 void printFollowSet()
 {
-
-
+	cout<<"Print follow set - starts"<<endl<<endl;
+	for(follow_set_map_it = follow_set_map.begin(); follow_set_map_it != follow_set_map.end(); follow_set_map_it++)
+	{
+		cout<<"Follow set of"<<(*follow_set_map_it).first<<endl;
+		cout<<"values are "<<endl;
+		follow_set = (*follow_set_map_it).second;
+		for(set_it = follow_set.begin(); set_it != follow_set.end(); set_it++)
+		{
+			cout<<*set_it<<" ";
+		}
+		cout<<endl;
+	}
+	cout<< "Print follow set -ends"<<endl<<endl;
 }
 
 void validateErrorCode4(int count)
