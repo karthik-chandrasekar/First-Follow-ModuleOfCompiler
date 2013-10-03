@@ -47,6 +47,8 @@ void collectFollowSet();
 void findFollowSet(char);
 void printFollowSet();
 
+char getFirstCharRuleString(char);
+
 //GLOBAL DATA STRUCTURES
 
 string grammar_array[100];
@@ -439,7 +441,7 @@ void findFollowSet(char non_terminal_char)
 	list<char> track_list;
 	int to_break =0, i=0;
 	string temp;
-	char prev_char;
+	char prev_char, first_rule_char;
 
 	if (!(isalpha(non_terminal_char)))
 		return;
@@ -447,10 +449,7 @@ void findFollowSet(char non_terminal_char)
 	if (!(rules_key_set.count(non_terminal_char)))
 		return;
 
-	if (non_terminal_called_set.count(non_terminal_char)>0)
-		return;
 
-	non_terminal_called_set.insert(non_terminal_char);	
 
 	rules_string_map_it = rules_string_map.find(non_terminal_char);
 	rules_string_set = (*rules_string_map_it).second;
@@ -459,13 +458,16 @@ void findFollowSet(char non_terminal_char)
 	
 	for(rules_string_set_it=rules_string_set.begin(); rules_string_set_it != rules_string_set.end(); rules_string_set_it++)
 	{
-		cout<< "Inside first for loop for follow set for"<<endl;
+		if (non_terminal_called_set.count(non_terminal_char)>0)
+			continue;
+		non_terminal_called_set.insert(non_terminal_char);	
+		cout<< "NEW RULEEEEE"<<endl;
+
 
 		temp = *rules_string_set_it;
 		cout<< "Rule string is "<<temp<<endl;
 	
 		track_list.clear();
-		follow_set.clear();
 	
 		for(i=0;temp[i]!='\0';i++)
 		{
@@ -486,16 +488,16 @@ void findFollowSet(char non_terminal_char)
 					cout<< "Prev char is "<<prev_char<<endl;
 					if (non_terminal_set.count(prev_char) > 0)
 					{
+						follow_set.clear();
 						follow_set.insert(temp[i]);
 						follow_set_map[prev_char] = follow_set;
-						cout<<"Added follow set for "<<prev_char<<" "<<"is"<<endl;
+						cout<<"ADDEDDDDD IN FOLLLLOWWW "<<temp[i]<<" "<<"is"<<endl;
 					}
 				}
 			}
 			else
 			{
 				//It is a non-terminal char. Now collect the follow set of this char. Make recursive call.
-
 
 				if(temp[i] == 'Z')
 				{
@@ -512,10 +514,33 @@ void findFollowSet(char non_terminal_char)
 					cout<<endl<<endl;
 					cout<< "It is a non terminal so making recursive call for "<<non_terminal_char<<endl;
 					findFollowSet(temp[i]);
-					cout<<"Out of recursion call for "<<non_terminal_char<<endl<<endl;
+					cout<<"Out of recursion call for "<<non_terminal_char<<endl<<endl<<endl;
 				}
-			}
+				if (track_list.size()>0)
+				{
+					
+			
+					prev_char = track_list.back();
+					
+					cout<< "So one more condition to call getlast char"<<endl;
+	
+					if (non_terminal_set.count(prev_char) > 0)
+					{
+					//Take the last char of the rule string
 
+						cout << "About to call get last char rule funciton"<<endl;
+						first_rule_char = getFirstCharRuleString(temp[i]);
+						cout<<"FIRST CHAR "<<first_rule_char<<endl;
+						follow_set.clear();
+						follow_set.insert(first_rule_char);
+						follow_set_map[prev_char] = follow_set;
+						cout<<"ADDDDEDDD IN FOLLOW SET  "<< first_rule_char<<endl;
+
+					}		
+				}
+				cout<<"Pushed in track list  "<< temp[i]<<endl;
+				track_list.push_back(temp[i]);
+			}
 			track_list.push_back(temp[i]);
 
 			if (follow_set.count('Z') != 0)
@@ -527,6 +552,31 @@ void findFollowSet(char non_terminal_char)
 		}
 		temp = " ";
 	}
+}
+
+char getFirstCharRuleString(char cur_nt)
+{
+
+	cout<< "Inside get last char rule string"<<endl;
+
+	map<char, set<string> > rl_string_map;
+	map<char, set<string> >:: iterator rl_string_map_it;
+	set<string> rl_string_set;
+	set<string>:: iterator rl_string_set_it;
+
+	string temp;
+	char last_rule_char;	
+		
+	rl_string_map_it = rules_string_map.find(cur_nt);
+	rl_string_set = (*rl_string_map_it).second;
+
+	for(rl_string_set_it=rl_string_set.begin(); rl_string_set_it != rl_string_set.end(); rl_string_set_it++)
+	{
+		temp = (*rl_string_set_it);
+		return(temp[0]);
+	}		
+
+	return last_rule_char;
 }
 
 void printFollowSet()
