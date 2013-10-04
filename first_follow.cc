@@ -47,6 +47,8 @@ void collectFollowSet();
 void findFollowSet(char);
 void printFollowSet();
 
+void remove_z(char);
+
 char getFirstCharRuleString(char);
 
 //GLOBAL DATA STRUCTURES
@@ -66,6 +68,8 @@ set<char>:: iterator set_it;
 set<char> first_set;
 set<char> follow_set;
 set<char> non_terminal_called_set;
+set<char> non_terminal_called_for_first_set;
+
 
 //MAP
 map<char, string> rules_map;
@@ -98,8 +102,8 @@ int main ()
 	validateInput(count);
 	checkForError();
 	print_rules_string_map();
-	//collectFirstSet();
-	collectFollowSet();
+	collectFirstSet();
+	//collectFollowSet();
 	return 0;
 } 
 
@@ -290,6 +294,7 @@ void findFirstSet(char non_terminal_char)
 //Compute first set
 	
 	int to_break = 0;
+	int to_remove_z = 0;
 	int i;
 	string temp;
 	set<char> temp_set;
@@ -301,6 +306,11 @@ void findFirstSet(char non_terminal_char)
 	if (!(rules_key_set.count(non_terminal_char)))
 		return;
 
+	if(non_terminal_called_for_first_set.count(non_terminal_char)>0)
+		return;
+
+	non_terminal_called_for_first_set.insert(non_terminal_char);
+
 	rules_string_map_it = rules_string_map.find(non_terminal_char);
 	rules_string_set = (*rules_string_map_it).second;
 
@@ -308,31 +318,34 @@ void findFirstSet(char non_terminal_char)
 
 	for(rules_string_set_it=rules_string_set.begin();rules_string_set_it != rules_string_set.end(); rules_string_set_it++)
 	{
-		cout<< "Inside first for loop of first set"<<endl;
+		cout<< "NEW RULEEEE of "<<non_terminal_char<<"  is being processed"<<endl;
+
 		
 		temp = *rules_string_set_it;
 		cout << "Rule string is "<<temp<<endl;
+
+		to_break = 0;
 		for(i=0;temp[i]!='\0';i++)
 		{
 			if (to_break == 1)
 				break;
-			cout<< "Inside second for loop of find first set for "<<temp[i]<<"  "<<endl;
+			cout<< "PROCESSING CHAR  "<<temp[i]<<"  "<<endl;
 			
-			first_set.clear();
-			temp_set.clear();
 			if(terminal_set.count(temp[i]) > 0)
 			{
+				first_set.clear();
+				temp_set.clear();
 				
-				cout << "Inside if" <<endl;	
+				cout << "THIS CHAR IS TEMRINAL  " <<temp[i]<<endl;
+	
 				if(first_set_map.count(non_terminal_char) == 0)
 				{	
-					cout<< "First time seeing term - adding it"<<endl;
 					first_set.insert(temp[i]);
 					first_set_map[non_terminal_char] = first_set;	
 				}
 				else
 				{
-					cout << "ALready first set is present for "<< non_terminal_char<<endl;
+					cout << "ALREADY FS IS TEHRE. APPENDING IT "<< non_terminal_char<<endl;
 					first_set = first_set_map[non_terminal_char];
 					first_set.insert(temp[i]);
 					first_set_map[non_terminal_char] = first_set;	
@@ -342,60 +355,87 @@ void findFirstSet(char non_terminal_char)
 
 			else
 			{
-				//It is a  non terminal. Collect the first set of the non terminal (It is assumed that it has been calculated already) and append it with the first set of this non terminal. 
-			
-				cout << "Inside else" <<endl;	
+				cout << "CHAR IS NON TERMINAL  "<< temp[i] <<endl;	
+
 				if (first_set_map.count(temp[i]) > 0)
 				{		
-					cout << "Inside if - Right flow"<<endl;
 					//First set is already calculated for this non terminal
 					temp_set = first_set_map[temp[i]];
+					if (first_set_map.count(non_terminal_char) >0)
+						first_set = first_set_map[non_terminal_char];
 					first_set.insert(temp_set.begin(), temp_set.end());
+					first_set_map[non_terminal_char] = first_set;
 				}
 				
-				else
+				else if ((isalpha(temp[i])))
 				{
-					if(isalpha(temp[i]))
+					if (temp[i] == 'Z')
 					{
-						cout<<"  "<<temp[i]<<" "<<"Recursive call - SUSPICIOUS- call "<<count <<endl<<endl;
+						cout<< "Presence of epsilon (Z) is identified"<<endl;
+						temp_set.insert('Z');
+						if (first_set_map.count(non_terminal_char) >0)
+							first_set = first_set_map[non_terminal_char];
+						first_set.insert(temp_set.begin(), temp_set.end());
+						first_set_map[non_terminal_char] = first_set;
+						
+					}
+					else
+					{
+						cout<<"  "<<temp[i]<<"  "<<"RECURSION CALL FOR  "<<non_terminal_char<<"FOR "<<count <<endl<<endl;
 						count ++;
-						if (temp[i] == 'Z')
-						{
-							cout<< "Presence of epsilon (Z) is identified"<<endl;
-							temp_set.insert('Z');
-						}
-						else
-						{
-							findFirstSet(temp[i]);
-							temp_set = first_set_map[temp[i]];
-						}
+						findFirstSet(temp[i]);
+						cout<< "OUT OF RECURSION OF "<<temp[i]<<"FOR "<<non_terminal_char<<endl<<endl;
+						temp_set = first_set_map[temp[i]];
 						if(first_set_map.count(non_terminal_char) ==0 )
 						{
+
+							cout<<"FS IS FRESH FOR  "<< non_terminal_char<<" ADDING VALUE OF" <<temp[i]<<endl;
 							first_set.insert(temp_set.begin(), temp_set.end());
 							first_set_map[non_terminal_char] = first_set;
 						}
 						else
 						{
+
+							cout<<"FS IS ALREADY THER FOR "<< non_terminal_char<<" APPENDING VALUE OF"<<temp[i]<<endl;
 							first_set = first_set_map[non_terminal_char];
 							first_set.insert(temp_set.begin(), temp_set.end());
 							first_set_map[non_terminal_char] = first_set;
 						}
 					}	
-				}			
-
-				
-				//check for the presence of epsilon in tempset and it if present, continue looping. Else break
-				if (temp_set.count('Z') != 0)
-				{
-					cout<<"Z is present "<<endl;
-					continue;
-				}
-				else
-					to_break =1;
+					if (temp_set.count('Z') != 0)
+					{
+						cout<<"Z is present "<<endl;
+						to_remove_z = 0;
+					}
+					else
+					{
+						to_break =1;
+						to_remove_z = 1;
+					}	
+					}			
 			}
 		}
+		if (to_remove_z)
+		{
+			remove_z(non_terminal_char);
+		}
 	}
-	cout<< "finding first set - Ends"<<endl<<endl;			
+}
+
+void remove_z(char non_terminal_char)
+{
+	set<char> first_set;
+	set<char> new_first_set;
+	set<char> :: iterator first_set_it;
+
+	first_set = first_set_map[non_terminal_char];
+	for(first_set_it = first_set.begin(); first_set_it != first_set.end(); first_set_it++)
+	{
+		if((* first_set_it) == 'Z')
+			continue;
+		new_first_set.insert(*first_set_it);
+	}
+	first_set_map[non_terminal_char] = new_first_set;
 }
 
 void printFirstSet()
