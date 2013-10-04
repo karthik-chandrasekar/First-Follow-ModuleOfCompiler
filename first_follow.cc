@@ -33,19 +33,18 @@ void remove_z(string);
 void printFirstSet();
 int stringcmp(string, string);
 
-
-//FINDING FOLLOW SETS:
+//FOLLOW SET
 void collectFollowSet();
-void findFollowSet(char);
+void findFollowSet(string);
 void printFollowSet();
+void getFirstStrRule(string);
 
-
-char getFirstCharRuleString(char);
 
 //GLOBAL DATA STRUCTURES
 
 string grammar_array[100];
 char input_array[100][100];
+
 
 //SET 
 set<string> rules_string_set;
@@ -57,13 +56,17 @@ set<string> first_set;
 set<string> non_terminal_called_for_first_set;
 set<string> terminal_set;
 set<string> non_terminal_set;
-
+set<string> non_terminal_called_set;
+set<string> follow_set;
+set<string> first_str_rule_set;
 
 //MAP
 map<string, list<list<string> > > grammar_rules_map;
 map<string, list<list<string> > >:: iterator grammar_rules_map_it;
 map<string, set<string> > first_set_map;
 map<string, set<string> >:: iterator first_set_map_it;
+map<string, set<string> > follow_set_map;
+map<string, set<string> >:: iterator follow_set_map_it;
 
 //LIST
 list<string> terminal_list;
@@ -75,14 +78,14 @@ list<list<string> > multiple_rule_list;
 list<list<string> >:: iterator multiple_rule_list_it;
 
 
-
 int main () 
 {
 	int count;
 	int isValid;
 
 	count = getInput();
-	collectFirstSet();
+	//collectFirstSet();
+	collectFollowSet();
 
 	return 0;
 } 
@@ -462,4 +465,134 @@ void printFirstSet()
 		cout<<endl;
 	}
 	cout << "Print first set - ends"<<endl<<endl;
+}
+
+
+//FOLLOW SET
+
+void collectFollowSet()
+{
+	for(list_it = non_terminal_list.begin(); list_it != non_terminal_list.end(); list_it++)
+	{
+		findFollowSet(*list_it);
+	}
+	printFollowSet();
+}
+
+void printFollowSet()
+{
+	cout<<"Print follow set -starts"<<endl<<endl;
+	for(follow_set_map_it = follow_set_map.begin(); follow_set_map_it != follow_set_map.end(); follow_set_map_it++)
+	{
+		cout<<(*follow_set_map_it).first<<" ";
+		follow_set = (*follow_set_map_it).second;
+		for(rules_string_set_it = follow_set.begin(); rules_string_set_it != follow_set.end(); rules_string_set_it++)
+		{
+			cout<<*rules_string_set_it<<"   ";
+		}
+		cout<<endl;
+	}
+	cout<< "Print first set - ends"<<endl<<endl;
+}
+
+void findFollowSet(string non_terminal)
+{
+
+	//Local DS
+	list<string> track_list;
+	int to_break =0, i=0;
+	string cur_str;
+	string prev_str, first_rule_str;
+	
+	multiple_rule_list = grammar_rules_map[non_terminal];
+
+	cout<<endl<<endl;
+	cout<< "BEGINS for "<<non_terminal<<endl;
+	if(non_terminal_called_set.count(non_terminal))
+		return;
+	non_terminal_called_set.insert(non_terminal);
+	
+	for(multiple_rule_list_it = multiple_rule_list.begin(); multiple_rule_list_it != multiple_rule_list.end(); multiple_rule_list_it++)
+	{
+		single_rule_list.clear();
+
+		single_rule_list = *multiple_rule_list_it;
+
+		track_list.clear();
+
+		
+		for(single_rule_list_it=single_rule_list.begin(); single_rule_list_it != single_rule_list.end(); single_rule_list_it++)
+		{
+
+			cur_str = *single_rule_list_it;
+			
+			cout<<"cur str is  "<< cur_str<<endl;
+				
+			if(terminal_set.count(cur_str)>0)
+			{
+				cout<<"Terminal  "<<cur_str<<endl;
+		
+				if(track_list.size()>0)
+				{
+					prev_str = track_list.back();
+
+					cout<< "Prev str is "<<prev_str<<endl;
+					if(non_terminal_set.count(prev_str)>0)
+					{
+						follow_set.clear();
+						follow_set.insert(cur_str);
+						follow_set_map[prev_str] = follow_set;
+						cout<<"Added in follow of "<<prev_str<<endl;
+
+					}
+				  }
+			}
+			else
+			{
+				if(non_terminal_set.count(cur_str) !=0)
+				{
+					cout<<" "<<"Recursion calling     "<<cur_str<<"  for "<<non_terminal<<endl;
+					findFollowSet(cur_str);
+					cout<< "Out of Recursion call    "<<cur_str<<"   for "<<non_terminal<<endl;
+
+					if(track_list.size()>0)
+					{
+						prev_str = track_list.back();
+						
+						if(non_terminal_set.count(prev_str)>0)
+						{
+							//getFirstStrRule(cur_str);
+							follow_set.clear();
+							follow_set.insert(first_str_rule_set.begin(), first_str_rule_set.end());
+							follow_set_map[prev_str] = follow_set;
+						}
+
+					}
+				}
+				if(follow_set.count("Z") !=0)
+				{
+					cout<<"Z is present"<<endl;
+					continue;
+				}	
+			}
+			track_list.push_back(cur_str);
+		}
+	}
+}
+
+void getFirstStrRule(string cur_str)
+{
+	list<list<string> > all_rule_list;
+	list<list<string> > ::iterator all_rule_list_it;	
+	list<string> a_rule_list;
+
+	all_rule_list = grammar_rules_map[cur_str];
+	first_str_rule_set.clear();
+	
+	for(all_rule_list_it = all_rule_list.begin(); all_rule_list_it != all_rule_list.end(); all_rule_list_it++)
+	{
+	
+		a_rule_list = *all_rule_list_it;
+		first_str_rule_set.insert(a_rule_list.front());
+	}
 }
