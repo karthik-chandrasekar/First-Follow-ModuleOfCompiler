@@ -5,41 +5,31 @@
 #include <set>
 #include <map>
 #include <list>
+#include <string.h>
+#include <stdio.h>
 
 using namespace std; 
-
 
 //FUNCTIONS;
 
 int getInput();
 void printGrammarArray(int);
-void cleanInput(int);
-void get_input_array(int, int, int, int);
-void fill_rules_map(int, int, int, int);
+void parseInput(int);
+void parseSingleLine(string, int);
+void printInput();
+void addRule(int);
+void formTerminalList();
+void formNonTerminalList();
+void formRuleMap();
+void printGrammarRulesMap();
 
-void print_input_array(int);
-void print_rules_string_map();
 
-void validateInput(int);
-
-void fill_terminal_list();
-void fill_non_terminal_list();
-void print_terminal_list();
-void print_non_terminal_list();
-void print_terminal_set();
-void print_non_terminal_set();
-
-void validateErrorCode0(int);
-void validateErrorCode1(int);
-void validateErrorCode2();
-void validateErrorCode3();
-void validateErrorCode4(int);
-void checkForError();
-
-//FINDING FIRST SETS
+//FIRST_SET
 void collectFirstSet();
-void findFirstSet(char);
+void findFirstSet(string);
+void remove_z(string);
 void printFirstSet();
+int stringcmp(string, string);
 
 
 //FINDING FOLLOW SETS:
@@ -47,7 +37,6 @@ void collectFollowSet();
 void findFollowSet(char);
 void printFollowSet();
 
-void remove_z(char);
 
 char getFirstCharRuleString(char);
 
@@ -61,30 +50,27 @@ set<string> rules_string_set;
 set<string>:: iterator rules_string_set_it;
 set<int> error_set;
 set<int>::iterator error_set_it;
-set<char> rules_key_set;
-set<char> terminal_set;
-set<char> non_terminal_set;
-set<char>:: iterator set_it;
-set<char> first_set;
-set<char> follow_set;
-set<char> non_terminal_called_set;
-set<char> non_terminal_called_for_first_set;
+set<string> temp_set;
+set<string> first_set;
+set<string> non_terminal_called_for_first_set;
+set<string> terminal_set;
+set<string> non_terminal_set;
 
 
 //MAP
-map<char, string> rules_map;
-map<char, string>::iterator rules_map_it;
-map<char, set<string> > rules_string_map;
-map<char, set<string> >:: iterator rules_string_map_it;
-map<char, set<char> > first_set_map;
-map<char, set<char> > ::iterator first_set_map_it;
-map<char, set<char> > follow_set_map;
-map<char, set<char> >:: iterator follow_set_map_it;
+map<string, list<list<string> > > grammar_rules_map;
+map<string, list<list<string> > >:: iterator grammar_rules_map_it;
+map<string, set<string> > first_set_map;
+map<string, set<string> >:: iterator first_set_map_it;
 
 //LIST
-list<char> terminal_list;
-list<char> non_terminal_list;
-list<char>::iterator list_it;
+list<string> terminal_list;
+list<string> non_terminal_list;
+list<string>::iterator list_it;
+list<string> single_rule_list;
+list<string> :: iterator single_rule_list_it;
+list<list<string> > multiple_rule_list;
+list<list<string> >:: iterator multiple_rule_list_it;
 
 
 int main () 
@@ -93,17 +79,8 @@ int main ()
 	int isValid;
 
 	count = getInput();
-	cleanInput(count);
-	print_input_array(count);
-	fill_terminal_list();
-	fill_non_terminal_list();
-	
-	//Validation Part 
-	validateInput(count);
-	checkForError();
-	print_rules_string_map();
 	collectFirstSet();
-	//collectFollowSet();
+
 	return 0;
 } 
 
@@ -112,7 +89,7 @@ int getInput()
 //Get the input per line. 
 
 	string line;
-	int i, count =0;
+	int count =0;
 	cout << "Enter grammar specification"<<endl;
 	while(true)
 	{
@@ -123,325 +100,310 @@ int getInput()
 		count++;	
 	}
 	printGrammarArray(count);
+	parseInput(count);
+	//printInput();
+	printGrammarRulesMap();
 	return count;
 }
 
 void printGrammarArray(int count)
 {
-	int i=0;
+	int i;
 	for(i=0;i < count; i++)
 	{	
 		cout << "Grammar specification" << "  " <<grammar_array[i]<<endl;
 	}
 }
 
-void print_input_array(int count)
+void parseInput(int count)
 {
-//Just print the array
-	cout << "printing input array"<<endl;
-	int i,j;
-	for (i=0;i< count; i++)
+
+	int i=0;
+	while(i<count)
 	{
-		for (j=0;;j++)
+		parseSingleLine(grammar_array[i], i);
+		i++;
+	}
+}
+
+void parseSingleLine(string single_line, int row_count)
+{
+	int i=0, to_break =0;
+	int start_word =0 , end_word = 0;
+	int string_length = single_line.length();
+	string temp;
+	
+	single_rule_list.clear();
+	multiple_rule_list.clear();	
+	
+
+	while(i < string_length)
+	{
+		if(to_break ==1)
+			break;
+		start_word = i;
+		while(isalpha(single_line[i]) or (isdigit(single_line[i])))
 		{
-			if (input_array[i][j] == '\0')
+			i++;
+			if(isspace(single_line[i]))
 				break;
-			//cout<<"i "<<i<<"  "<<"j "<<j<<" "<<"value "<<input_array[i][j]<<" "<<endl;
-			cout<<input_array[i][j]<<" ";
 		}
-		cout<<endl;
-	}
-}
+		end_word = i;
+		temp = single_line.substr(start_word, (end_word-start_word));
+		single_rule_list.push_back(temp);
 
-
-void print_rules_string_map()
-{
-//Just print  rules string map
-	cout<<"Printing rules map"<<endl;
-	for(rules_string_map_it=rules_string_map.begin();rules_string_map_it!=rules_string_map.end();rules_string_map_it++)
-	{
-	 	cout<<(*rules_string_map_it).first<<"   ";
-		rules_string_set = (*rules_string_map_it).second;
-		for(rules_string_set_it=rules_string_set.begin(); rules_string_set_it!=rules_string_set.end(); rules_string_set_it++)
+		while(!(isalpha(single_line[i])))
 		{
-			cout<<*rules_string_set_it<<"  ";
-		}
-		cout<<endl;
-	}
-}
-
-void cleanInput(int count)
-{
-//Inputs can have multiple statements in a single statement separated by # and ## and the end of grammar. So properly put them in an array such that every single rule is separately stored. 
-
-	int rows_count = count;
-	int start_col;	
-	int end_col = 0;
-	int rule_count = 0;
-	int i,j;
-
-	for(i=0;i<rows_count;i++)
-	{
-		start_col =0;
-		for(j=0;;j++)
-		{
-			if(grammar_array[i][j] == '#')   //If we encounter # it is end of a rule
+			i++;
+			if (single_line[i] == '#')
 			{
-				end_col = j;
-				get_input_array(i,start_col, end_col, rule_count);
-				rule_count += 1;
-				start_col = end_col;
+				to_break = 1;
 				break;
 			}
 		}
 	}
+	addRule(row_count);
 }
 
-void get_input_array(int row, int start_col, int end_col, int rule_count)
+
+void addRule(int row_count)
 {
-	int i;
-	int j=0;
-	for(i=start_col; i<end_col; i++)
+
+	if(row_count ==0)
 	{
-		if (isspace(grammar_array[row][i]))		
-			continue;
-		input_array[rule_count][j] = grammar_array[row][i];	
-		j++;
+		formNonTerminalList();
 	}
-	input_array[rule_count][j] = '\0';
-	if (row > 1)
+	else if(row_count ==1)
 	{
-		fill_rules_map(row, start_col, end_col, rule_count);
-	}
-}
-
-void fill_rules_map(int row, int start_col, int end_col, int rule_count)
-{
-	string rule_value;
-	char rule_value_array[10];
-	int i, j;
-
-	for(i=3,j=0;input_array[row][i] != '\0';i++,j++)
-	{
-		rule_value_array[j] = input_array[row][i];		
-	}
-
-	if(input_array[row][3] == '\0')
-	{
-		rule_value_array[j] = 'Z';
-		j++;
-	}
-
-	rule_value_array[j] = '\0';
-
-	rules_map[input_array[row][0]] = rule_value_array;
-
-	if (rules_string_map.count(input_array[row][0]) == 0)
-	{
-		rules_string_set.insert(rule_value_array);
-		rules_string_map[input_array[row][0]] = rules_string_set;
-
+		formTerminalList();
 	}
 	else
 	{
-		rules_string_set = rules_string_map[input_array[row][0]];
-		rules_string_set.insert(rule_value_array);
-		rules_string_map[input_array[row][0]] = rules_string_set;
+		formRuleMap();
 	}
-	rules_string_set.clear();
 }
 
-
-void  validateInput(int count)
+void formNonTerminalList()
 {
-// Validate whether the entered input is proper
 
-   	validateErrorCode4(count); 
-	validateErrorCode1(count);
-	validateErrorCode3();
-	validateErrorCode2();
-}
-
-void checkForError()
-{
-//Analyse error_set and display errors and terminate the program execution
-	
-	int to_stop_execution = 0;
-	for(error_set_it = error_set.begin();error_set_it != error_set.end(); error_set_it++)
+	for(single_rule_list_it = single_rule_list.begin(); single_rule_list_it != single_rule_list.end(); single_rule_list_it++)
 	{
-		cout<<"ERROR CODE : "<< *(error_set_it)<<endl;
-		to_stop_execution = 1;
+		non_terminal_list.push_back(*single_rule_list_it);
+		non_terminal_set.insert(*single_rule_list_it);	
 	}
-	if (to_stop_execution == 1)
-		//exit(0);
-		cout << "The program shud have been terminated";
 }
 
+void formTerminalList()
+{
+
+	for(single_rule_list_it = single_rule_list.begin(); single_rule_list_it != single_rule_list.end(); single_rule_list_it++)
+	{
+		terminal_list.push_back(*single_rule_list_it);
+		terminal_set.insert(*single_rule_list_it);	
+	}
+}
+
+void formRuleMap()
+{
+
+	string key;
+	key = single_rule_list.front();
+	single_rule_list.pop_front();
+	if (grammar_rules_map.count(key) == 0)
+	{
+		multiple_rule_list.push_back(single_rule_list);
+		grammar_rules_map[key] = multiple_rule_list;
+	}
+	else
+	{
+		multiple_rule_list = grammar_rules_map[key];
+		multiple_rule_list.push_back(single_rule_list);
+		grammar_rules_map[key] = multiple_rule_list;
+	}	
+} 
+void printInput()
+{
+	for(single_rule_list_it = single_rule_list.begin(); single_rule_list_it != single_rule_list.end(); single_rule_list_it++)
+	{
+		cout<< *single_rule_list_it<<endl;
+	}
+
+}
+
+void printGrammarRulesMap()
+{
+	for(grammar_rules_map_it = grammar_rules_map.begin(); grammar_rules_map_it != grammar_rules_map.end(); grammar_rules_map_it++)
+	{
+		cout<< (*grammar_rules_map_it).first<<"   " ;
+		multiple_rule_list = (*grammar_rules_map_it).second;
+		for(multiple_rule_list_it = multiple_rule_list.begin(); multiple_rule_list_it != multiple_rule_list.end(); multiple_rule_list_it++)
+		{
+			single_rule_list = *multiple_rule_list_it;
+			for(single_rule_list_it=single_rule_list.begin(); single_rule_list_it != single_rule_list.end(); single_rule_list_it++)
+			{
+				cout<<*single_rule_list_it<<"  ";
+			}
+			cout<<endl;
+		}
+	}
+
+}
 
 void collectFirstSet()
 {
-// Collect first sets 		
-	for(list_it = non_terminal_list.begin(); list_it!=non_terminal_list.end(); list_it++)
+	for(list_it = non_terminal_list.begin(); list_it != non_terminal_list.end(); list_it++)
 	{
-		cout<< "findFirstSet called for "<<*list_it<<endl;
 		findFirstSet(*list_it);
 	}
-	printFirstSet();	
+	printFirstSet();
+
 }
 
-void findFirstSet(char non_terminal_char)
+void findFirstSet(string non_terminal)
 {
-//Compute first set
-	
+
 	int to_break = 0;
 	int to_remove_z = 0;
 	int i;
-	string temp;
-	set<char> temp_set;
-	int count = 0;
+	string cur_str;
+	set<string> temp_set;
+	int count = 0;	
 
-	if (!(isalpha(non_terminal_char)))
+	if(non_terminal_called_for_first_set.count(non_terminal)>0)
 		return;
 
-	if (!(rules_key_set.count(non_terminal_char)))
-		return;
+	non_terminal_called_for_first_set.insert(non_terminal);
 
-	if(non_terminal_called_for_first_set.count(non_terminal_char)>0)
-		return;
-
-	non_terminal_called_for_first_set.insert(non_terminal_char);
-
-	rules_string_map_it = rules_string_map.find(non_terminal_char);
-	rules_string_set = (*rules_string_map_it).second;
-
-	cout << "find first set - BEGINSSSSS for   "<< non_terminal_char<<" "<<endl<<endl;
-
-	for(rules_string_set_it=rules_string_set.begin();rules_string_set_it != rules_string_set.end(); rules_string_set_it++)
-	{
-		cout<< "NEW RULEEEE of "<<non_terminal_char<<"  is being processed"<<endl;
-
-		
-		temp = *rules_string_set_it;
-		cout << "Rule string is "<<temp<<endl;
-
-		to_break = 0;
-		for(i=0;temp[i]!='\0';i++)
-		{
-			if (to_break == 1)
-				break;
-			cout<< "PROCESSING CHAR  "<<temp[i]<<"  "<<endl;
-			
-			if(terminal_set.count(temp[i]) > 0)
-			{
-				first_set.clear();
-				temp_set.clear();
-				
-				cout << "THIS CHAR IS TEMRINAL  " <<temp[i]<<endl;
 	
-				if(first_set_map.count(non_terminal_char) == 0)
-				{	
-					first_set.insert(temp[i]);
-					first_set_map[non_terminal_char] = first_set;	
-				}
-				else
-				{
-					cout << "ALREADY FS IS TEHRE. APPENDING IT "<< non_terminal_char<<endl;
-					first_set = first_set_map[non_terminal_char];
-					first_set.insert(temp[i]);
-					first_set_map[non_terminal_char] = first_set;	
-				}
-				to_break = 1;
-			}
+	multiple_rule_list = grammar_rules_map[non_terminal];		
 
-			else
+	cout<<endl<<endl;
+	cout<<"BEGINS for "<<non_terminal<<endl;
+		
+		for(multiple_rule_list_it = multiple_rule_list.begin(); multiple_rule_list_it != multiple_rule_list.end(); multiple_rule_list_it++)
+		{
+			single_rule_list = *multiple_rule_list_it;
+			for(single_rule_list_it=single_rule_list.begin(); single_rule_list_it != single_rule_list.end(); single_rule_list_it++)
 			{
-				cout << "CHAR IS NON TERMINAL  "<< temp[i] <<endl;	
-
-				if (first_set_map.count(temp[i]) > 0)
-				{		
-					//First set is already calculated for this non terminal
-					temp_set = first_set_map[temp[i]];
-					if (first_set_map.count(non_terminal_char) >0)
-						first_set = first_set_map[non_terminal_char];
-					first_set.insert(temp_set.begin(), temp_set.end());
-					first_set_map[non_terminal_char] = first_set;
-				}
-				
-				else if ((isalpha(temp[i])))
+				cur_str = *single_rule_list_it;
+					
+				if (terminal_set.count(cur_str) > 0)
 				{
-					if (temp[i] == 'Z')
+					first_set.clear();
+					temp_set.clear();
+					
+					if(first_set_map.count(non_terminal) == 0)
 					{
-						cout<< "Presence of epsilon (Z) is identified"<<endl;
-						temp_set.insert('Z');
-						if (first_set_map.count(non_terminal_char) >0)
-							first_set = first_set_map[non_terminal_char];
-						first_set.insert(temp_set.begin(), temp_set.end());
-						first_set_map[non_terminal_char] = first_set;
-						
-					}
+						first_set.insert(cur_str);
+						first_set_map[non_terminal] = first_set;
+					}			
 					else
 					{
-						cout<<"  "<<temp[i]<<"  "<<"RECURSION CALL FOR  "<<non_terminal_char<<"FOR "<<count <<endl<<endl;
-						count ++;
-						findFirstSet(temp[i]);
-						cout<< "OUT OF RECURSION OF "<<temp[i]<<"FOR "<<non_terminal_char<<endl<<endl;
-						temp_set = first_set_map[temp[i]];
-						if(first_set_map.count(non_terminal_char) ==0 )
+						first_set = first_set_map[non_terminal];
+						first_set.insert(cur_str);
+						first_set_map[non_terminal] = first_set;
+					}	
+					to_break = 1;
+				}
+				
+				else
+				{
+					cout<< "CHAR IS NON TERMINAL   "<< cur_str<<endl;
+					if (first_set_map.count(cur_str)>0)
+					{
+						temp_set = first_set_map[cur_str];
+						if (first_set_map.count(non_terminal)>0)
+							first_set = first_set_map[non_terminal];
+						first_set.insert(temp_set.begin(), temp_set.end());
+						first_set_map[non_terminal] = first_set;
+					}
+					
+					else 
+					{
+						if (stringcmp(cur_str,"Z"))
 						{
-
-							cout<<"FS IS FRESH FOR  "<< non_terminal_char<<" ADDING VALUE OF" <<temp[i]<<endl;
+							cout << "EPSILON IDENTIFIED"<<endl;
+							temp_set.insert("Z");
+							if (first_set_map.count(non_terminal)>0)
+								first_set = first_set_map[non_terminal];
 							first_set.insert(temp_set.begin(), temp_set.end());
-							first_set_map[non_terminal_char] = first_set;
+							first_set_map[non_terminal] = first_set;
 						}
 						else
 						{
+							cout<<" "<<"RECURSION call "<< cur_str<< "   for   "<<non_terminal<<"count is "<<count<<endl<<endl;
+							count++;
+							findFirstSet(cur_str);
+							cout<< "OUT OF RECURSION   "<<cur_str<<"  for "<<non_terminal<<endl;
+							temp_set = first_set_map[cur_str];
+							if(first_set_map.count(non_terminal) ==0)
+							{
+								first_set.insert(temp_set.begin(), temp_set.end());
+								first_set_map[non_terminal] = first_set;
+			
+							}
+							else
+							{
+								first_set = first_set_map[non_terminal];
+								first_set.insert(temp_set.begin(), temp_set.end());
+								first_set_map[non_terminal] = first_set;	
+				
+							}
 
-							cout<<"FS IS ALREADY THER FOR "<< non_terminal_char<<" APPENDING VALUE OF"<<temp[i]<<endl;
-							first_set = first_set_map[non_terminal_char];
-							first_set.insert(temp_set.begin(), temp_set.end());
-							first_set_map[non_terminal_char] = first_set;
 						}
-					}	
-					if (temp_set.count('Z') != 0)
-					{
-						cout<<"Z is present "<<endl;
-						to_remove_z = 0;
+						if (temp_set.count("Z") != 0)
+						{
+							cout<<"Z is present"<<endl;
+							to_remove_z = 0;
+						}
+						else
+						{
+							to_break = 1;
+							to_remove_z = 1;
+						}
 					}
-					else
-					{
-						to_break =1;
-						to_remove_z = 1;
-					}	
-					}			
-			}
+				}
+				}
+				if(to_remove_z)
+				{
+					remove_z(non_terminal);
+				}
 		}
-		if (to_remove_z)
-		{
-			remove_z(non_terminal_char);
-		}
-	}
 }
 
-void remove_z(char non_terminal_char)
+void remove_z(string non_terminal)
 {
-	set<char> first_set;
-	set<char> new_first_set;
-	set<char> :: iterator first_set_it;
-
-	first_set = first_set_map[non_terminal_char];
+	set<string> first_set;
+	set<string> new_first_set;
+	set<string> :: iterator first_set_it;
+	
+	first_set = first_set_map[non_terminal];
 	for(first_set_it = first_set.begin(); first_set_it != first_set.end(); first_set_it++)
 	{
-		if((* first_set_it) == 'Z')
+		if(stringcmp((*first_set_it), "Z") == 0)
 			continue;
 		new_first_set.insert(*first_set_it);
 	}
-	first_set_map[non_terminal_char] = new_first_set;
+	first_set_map[non_terminal] = new_first_set;
+}
+
+
+int stringcmp(string a, string b)
+{
+	int i=0;
+	for(i=0;a[i]!='\0' && b[i]!='\0';i++)
+	{
+		
+		if(a[i] == b[i])
+			continue;
+		else
+			return 0;
+	}
+	return 1;
 }
 
 void printFirstSet()
 {
-//Printing First set
-
 	cout<< "Print first set - starts"<<endl<<endl;
 	for(first_set_map_it = first_set_map.begin();first_set_map_it != first_set_map.end(); first_set_map_it++)
 	{
@@ -449,390 +411,11 @@ void printFirstSet()
 		cout<<"First set of "<<(*first_set_map_it).first<<endl;
 		cout<<"Values are"<<endl;
 		first_set = (*first_set_map_it).second;
-		for(set_it = first_set.begin(); set_it != first_set.end(); set_it++)
+		for(rules_string_set_it = first_set.begin(); rules_string_set_it != first_set.end(); rules_string_set_it++)
 		{
-			cout<<*set_it<< "  ";
+			cout<<*rules_string_set_it<< "  ";
 		}
 		cout<<endl;
 	}
 	cout << "Print first set - ends"<<endl<<endl;
 }
-
-
-void collectFollowSet()
-{
-//Collect follow sets
-	for(list_it = non_terminal_list.begin(); list_it != non_terminal_list.end(); list_it++)
-	{
-		cout<<"collectFollowSet - findFollowSet called for "<<*list_it<<endl;
-		findFollowSet(*list_it);
-	}
-	printFollowSet();
-}
-
-
-void findFollowSet(char non_terminal_char)
-{
-
-//Compute follow set
-
-	//Local data structures
-
-	list<char> track_list;
-	int to_break =0, i=0;
-	string temp;
-	char prev_char, first_rule_char;
-
-	if (!(isalpha(non_terminal_char)))
-		return;
-
-	if (!(rules_key_set.count(non_terminal_char)))
-		return;
-
-
-
-	rules_string_map_it = rules_string_map.find(non_terminal_char);
-	rules_string_set = (*rules_string_map_it).second;
-
-	cout<<"find follow set - BEGINSSSS for   "<< non_terminal_char<<endl<<endl;
-	
-	for(rules_string_set_it=rules_string_set.begin(); rules_string_set_it != rules_string_set.end(); rules_string_set_it++)
-	{
-		if (non_terminal_called_set.count(non_terminal_char)>0)
-			continue;
-		non_terminal_called_set.insert(non_terminal_char);	
-		cout<< "NEW RULEEEEE"<<endl;
-
-
-		temp = *rules_string_set_it;
-		cout<< "Rule string is "<<temp<<endl;
-	
-		track_list.clear();
-	
-		for(i=0;temp[i]!='\0';i++)
-		{
-			if (to_break ==1)
-				break;
-
-			cout<< "Inside second for loop for find follow set for "<<temp[i]<<" "<<endl;
-	
-			if(terminal_set.count(temp[i])>0)
-			{
-				cout << "Inside  terminal body"<<endl;
-				//If it is terminal, check the previous character. If it is terminal, add the current terminal in the follow set of the prev terminal char. 
-				if(track_list.size() >0)
-				{
-					cout<< "Inside track list"<<endl;
-
-					prev_char = track_list.back();
-					cout<< "Prev char is "<<prev_char<<endl;
-					if (non_terminal_set.count(prev_char) > 0)
-					{
-						follow_set.clear();
-						follow_set.insert(temp[i]);
-						follow_set_map[prev_char] = follow_set;
-						cout<<"ADDEDDDDD IN FOLLLLOWWW "<<temp[i]<<" "<<"is"<<endl;
-					}
-				}
-			}
-			else
-			{
-				//It is a non-terminal char. Now collect the follow set of this char. Make recursive call.
-
-				if(temp[i] == 'Z')
-				{
-					cout<<"Presence of epsilon (Z) is identified"<<endl;
-				}
-
-				if(non_terminal_called_set.count(temp[i])>0)
-				{
-					cout<< "Already called recursion call for this non terminal "<<temp[i]<<endl;
-				}
-
-				else if(isalpha(temp[i]))
-				{
-					cout<<endl<<endl;
-					cout<< "It is a non terminal so making recursive call for "<<non_terminal_char<<endl;
-					findFollowSet(temp[i]);
-					cout<<"Out of recursion call for "<<non_terminal_char<<endl<<endl<<endl;
-				}
-				if (track_list.size()>0)
-				{
-					
-			
-					prev_char = track_list.back();
-					
-					cout<< "So one more condition to call getlast char"<<endl;
-	
-					if (non_terminal_set.count(prev_char) > 0)
-					{
-					//Take the last char of the rule string
-
-						cout << "About to call get last char rule funciton"<<endl;
-						first_rule_char = getFirstCharRuleString(temp[i]);
-						cout<<"FIRST CHAR "<<first_rule_char<<endl;
-						follow_set.clear();
-						follow_set.insert(first_rule_char);
-						follow_set_map[prev_char] = follow_set;
-						cout<<"ADDDDEDDD IN FOLLOW SET  "<< first_rule_char<<endl;
-
-					}		
-				}
-				cout<<"Pushed in track list  "<< temp[i]<<endl;
-				track_list.push_back(temp[i]);
-			}
-			track_list.push_back(temp[i]);
-
-			if (follow_set.count('Z') != 0)
-			{
-				cout<<"Z is present "<<endl;
-				continue;
-			}
-
-		}
-		temp = " ";
-	}
-}
-
-char getFirstCharRuleString(char cur_nt)
-{
-
-	cout<< "Inside get last char rule string"<<endl;
-
-	map<char, set<string> > rl_string_map;
-	map<char, set<string> >:: iterator rl_string_map_it;
-	set<string> rl_string_set;
-	set<string>:: iterator rl_string_set_it;
-
-	string temp;
-	char last_rule_char;	
-		
-	rl_string_map_it = rules_string_map.find(cur_nt);
-	rl_string_set = (*rl_string_map_it).second;
-
-	for(rl_string_set_it=rl_string_set.begin(); rl_string_set_it != rl_string_set.end(); rl_string_set_it++)
-	{
-		temp = (*rl_string_set_it);
-		return(temp[0]);
-	}		
-
-	return last_rule_char;
-}
-
-void printFollowSet()
-{
-	cout<<"Print follow set - starts"<<endl<<endl;
-	for(follow_set_map_it = follow_set_map.begin(); follow_set_map_it != follow_set_map.end(); follow_set_map_it++)
-	{
-		cout<<"Follow set of"<<(*follow_set_map_it).first<<endl;
-		cout<<"values are "<<endl;
-		follow_set = (*follow_set_map_it).second;
-		for(set_it = follow_set.begin(); set_it != follow_set.end(); set_it++)
-		{
-			cout<<*set_it<<" ";
-		}
-		cout<<endl;
-	}
-	cout<< "Print follow set -ends"<<endl<<endl;
-}
-
-void validateErrorCode4(int count)
-{
-// Check for ERROR  4
-
-	string terminals;
-	int term = 0;
-	int i, j, k;
-	
-	terminals = input_array[0];
-
-	for(i=0;i<count;i++)
-	{
-		term = 0;
-		if (!(isalpha(terminals[i])))
-			continue;
-		for(j=0,k=0;j<count;j++)
-		{
-			//cout<<"terminal "<<terminals[i]<<" "<<"Input "<<input_array[j][k]<<" "<<"index "<<"i "<<i <<"j "<<j<<"k "<<k<<endl;
-			if (terminals[i] == input_array[j][k])
-			   {		
-				term = 1;
-				break;
-			   }
-		}
-		if(term ==0 )
-			error_set.insert(4);
-	}
-}
-
-
-void validateErrorCode0()
-{
-//check for syntax error
-	cout << "validate error code 1 function is empty";		
-}
-
-void validateErrorCode1(int count)
-{
-	//Check for error code 1
-	string non_terminal;
-	int non_term = 0;
-	int i, j, k;
-
-	non_terminal = input_array[1];
-	
-	for(i=0;i<count;i++)
-	{
-		non_term = 0;
-		if (!isalpha(non_terminal[i]))
-			continue;
-		for(j=2;j<count;j++)
-		{
-			for(k=3;;k++)
-			{
-				if (input_array[j][k] == '\0')
-					break;
-				if (!(isalpha(input_array[j][k])))
-					continue;
-				//cout<<"terminal "<<non_terminal[i]<<" "<<"Input "<<input_array[j][k]<<" "<<"index "<<"i "<<i <<"j "<<j<<"k "<<k<<endl;
-				if (non_terminal[i] == input_array[j][k])
-				{
-					non_term = 1;
-					break;
-				}
-			}
-			if (non_term == 1)
-				break;
-		}
-		if (non_term ==0)
-			error_set.insert(1);
-	}
-}
-
-void getRulesKeySet()
-{
-//Generate rules key set
-	for(rules_string_map_it = rules_string_map.begin(); rules_string_map_it != rules_string_map.end(); rules_string_map_it++)
-		{
-			rules_key_set.insert((*rules_string_map_it).first);
-			cout << (*rules_string_map_it).first<< " ";
-		}
-		cout<<endl;
-}
-
-void validateErrorCode3()
-{
-//check for error code 3 (i.e) If any terminal is on the left side of the rule. 
-	getRulesKeySet();
-	//cout<< "Rule set : ";	
-	for(list_it=terminal_list.begin(); list_it!=terminal_list.end(); list_it++)
-	{
-		if (rules_key_set.count(*list_it) >= 1)
-			{
-				error_set.insert(3);
-			}
-	//cout<<*list_it<<" ";
-	}
-	cout<<endl;
-}
-
-void validateErrorCode2()
-{
-	string temp;
-	int i;
-	for(rules_string_map_it = rules_string_map.begin(); rules_string_map_it != rules_string_map.end(); rules_string_map_it++)
-	{
-		//Rules key check
-		if(non_terminal_set.count((*rules_string_map_it).first) == 0)
-			cout<<"Key accused"<<endl;
-			error_set.insert(2);
-			cout<<(*rules_string_map_it).first<<endl;
-
-		//Rules value check
-		rules_string_set = (*rules_string_map_it).second;
-		for(rules_string_set_it=rules_string_set.begin(); rules_string_set_it!=rules_string_set.end(); rules_string_set_it++)
-		{
-			temp = *rules_string_set_it;
-			for(i=0;;i++)
-			{
-				if (temp[i]=='\0')
-					break;
-				if (terminal_set.count(temp[i]) == 0 && non_terminal_set.count(temp[i]==0))
-					error_set.insert(2);
-					cout<<"Rule accused of error  "<<endl;
-					cout<<temp[i]<<endl;
-			}
-		}
-	
-	}
-}
-
-void fill_terminal_list()
-{
-	int i=0;
-	for(i=0;;i++)
-	{
-		if(input_array[1][i] == '\0')
-			break;
-		terminal_list.push_back(input_array[1][i]);
-		terminal_set.insert(input_array[1][i]);
-	}
-	print_terminal_list();
-	print_terminal_set();
-}
-
-void print_terminal_list()
-{
-	cout<<"printing terminal list"<<endl;
-	for(list_it=terminal_list.begin();list_it!=terminal_list.end();list_it++)
-	{
-		cout<<*list_it<<endl;		
-	}
-}
-
-
-void print_terminal_set()
-{
-	cout<<"Printing terminal set"<<endl;
-	for(set_it=terminal_set.begin();set_it!=terminal_set.end();set_it++)
-	{
-		cout<<*set_it<<endl;
-	}
-}
-
-void fill_non_terminal_list()
-{
-	int i=0;
-	for(i=0;;i++)
-	{
-		if(input_array[0][i] == '\0')
-			break;
-		non_terminal_list.push_back(input_array[0][i]);
-		non_terminal_set.insert(input_array[0][i]);
-	}
-	print_non_terminal_list();
-	print_non_terminal_set();
-}
-
-void print_non_terminal_list()
-{
-	cout<<"printing non terminal list"<<endl;
-	for(list_it=non_terminal_list.begin();list_it!=non_terminal_list.end();++list_it)
-	{
-		cout<<*list_it<<endl;
-	}
-}
-
-void print_non_terminal_set()
-{
-	cout<<"printing non terminal set"<<endl;
-	for(set_it=non_terminal_set.begin();set_it!=non_terminal_set.end();set_it++)
-	{
-		cout<<*set_it<<endl;
-	}
-
-}
-
-//TODO
-//Input getting part need to be revisited for sure. 
-// Errorcode 2 and 0 has to be revisited
