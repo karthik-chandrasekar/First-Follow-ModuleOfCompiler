@@ -23,6 +23,7 @@ void formNonTerminalList();
 void formRuleMap();
 void printGrammarRulesMap();
 
+int count;
 
 //FIRST_SET
 void collectFirstSet();
@@ -73,13 +74,14 @@ list<list<string> > multiple_rule_list;
 list<list<string> >:: iterator multiple_rule_list_it;
 
 
+
 int main () 
 {
 	int count;
 	int isValid;
 
 	count = getInput();
-	collectFirstSet();
+	//collectFirstSet();
 
 	return 0;
 } 
@@ -139,8 +141,9 @@ void parseSingleLine(string single_line, int row_count)
 
 	while(i < string_length)
 	{
-		if(to_break ==1)
+		if(single_line[i] == '\0')
 			break;
+	
 		start_word = i;
 		while(isalpha(single_line[i]) or (isdigit(single_line[i])))
 		{
@@ -157,8 +160,7 @@ void parseSingleLine(string single_line, int row_count)
 			i++;
 			if (single_line[i] == '#')
 			{
-				to_break = 1;
-				break;
+				to_break = 0;
 			}
 		}
 	}
