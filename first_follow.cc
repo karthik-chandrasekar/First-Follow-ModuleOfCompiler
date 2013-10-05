@@ -27,16 +27,16 @@ void printGrammarRulesMap();
 int isListEmpty();
 void addDollarForFollow(string);
 
-void validateInput();
-void checkForError();
-void checkForErrorCode0();
+void validateInput(int);
+void checkForError(int);
+void checkForErrorCode0(int);
+void findForErrorCode0(string);
 void checkForErrorCode1();
 void checkForErrorCode2();
 void checkForErrorCode3();
 void checkForErrorCode4();
 void printError();
 
-int count;
 
 //FIRST_SET
 void collectFirstSet();
@@ -75,6 +75,7 @@ set<string> first_str_rule_set;
 set<string> grammar_rule_key_set;
 set<string> all_symb_grammar_set;
 set<string> non_term_track_set;
+set<char> allowed_spl_char_set;
 
 //MAP
 map<string, list<list<string> > > grammar_rules_map;
@@ -101,7 +102,7 @@ int main ()
 	int isValid;
 
 	count = getInput();
-	validateInput();
+	validateInput(count);
 	collectFirstSet();
 	collectFollowSet();
 
@@ -131,25 +132,56 @@ int getInput()
 	return count;
 }
 
-void validateInput()
+void validateInput(int count)
 {
-	checkForError();
+	checkForError(count);
 	printError();
 }
 
-void checkForError()
+void checkForError(int count)
 {
-	checkForErrorCode0();
+	checkForErrorCode0(count);
 	checkForErrorCode1();
 	checkForErrorCode2();
 	checkForErrorCode3();
 	checkForErrorCode4();
 }
 
-void checkForErrorCode0()
+void checkForErrorCode0(int count)
 {
-//check for syntax err
+	int i=0;
+	allowed_spl_char_set.insert('-');
+	allowed_spl_char_set.insert('>');
+	allowed_spl_char_set.insert('#');
+	while(i<count)
+	{
+		findForErrorCode0(grammar_array[i]);	
+		i++;
+	}
+}
 
+void findForErrorCode0(string single_line)
+{
+	int i=0;
+	int string_length = single_line.length();
+
+	while(i< string_length)
+	{
+		i++;	
+		if(single_line[i] == '\0')
+			break;
+		if(isalpha(single_line[i]) or isdigit(single_line[i]))
+			continue;
+		else if	(isspace(single_line[i]))
+			continue;
+		else if(allowed_spl_char_set.count(single_line[i])>0)
+			continue;
+		else
+		{
+			error_code_set.insert(0);
+			break;
+		}
+	}
 }
 
 void checkForErrorCode1()
@@ -218,6 +250,11 @@ void checkForErrorCode4()
 void printError()
 {
 	int to_exit=0;
+	if (error_code_set.count(0)>0)
+	{
+		cout<<"ERROR CODE " <<'0'<<endl;
+		exit(1);
+	}
 	for(error_code_set_it = error_code_set.begin(); error_code_set_it != error_code_set.end(); error_code_set_it++)
 	{
 		cout<<"ERROR CODE "<<*error_code_set_it<<endl;
