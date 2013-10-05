@@ -166,13 +166,28 @@ void checkForErrorCode1()
 
 void checkForErrorCode2()
 {
-	for(symb_it = all_symb_grammar_set.begin(); symb_it != all_symb_grammar_set.end(); symb_it++)
+	for(symb_it = grammar_rule_key_set.begin(); symb_it != grammar_rule_key_set.end(); symb_it++)
 	{
-		if(((terminal_set.count((*symb_it)))==0) && ((non_terminal_set.count((*symb_it))) == 1))
+		if(non_terminal_set.count(*symb_it) ==0)
+		{
 			error_code_set.insert(2);
 			break;
+		}
+	}
+
+	for(symb_it = all_symb_grammar_set.begin(); symb_it != all_symb_grammar_set.end(); symb_it++)
+	{
+		if(non_terminal_set.count(*symb_it) ==0)
+		{
+			if(terminal_set.count(*symb_it)==0)
+			{
+				error_code_set.insert(2);
+				break;
+			}
+		}
 	}
 }
+
 
 void checkForErrorCode3()
 {
@@ -198,6 +213,7 @@ void checkForErrorCode4()
 		}
 	}
 }
+
 
 void printError()
 {
@@ -452,7 +468,10 @@ void printGrammarRulesMap()
 			for(single_rule_list_it=single_rule_list.begin(); single_rule_list_it != single_rule_list.end(); single_rule_list_it++)
 			{
 				//cout<<*single_rule_list_it<<"  ";
-				all_symb_grammar_set.insert((*single_rule_list_it));
+				if (stringcmp((*single_rule_list_it), "#") ==1)
+					continue;
+				else
+					all_symb_grammar_set.insert((*single_rule_list_it));
 			}
 			//cout<<endl;
 		}
