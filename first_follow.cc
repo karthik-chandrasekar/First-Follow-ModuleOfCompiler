@@ -26,6 +26,15 @@ void formRuleMap();
 void printGrammarRulesMap();
 int isListEmpty();
 
+void validateInput();
+void checkForError();
+void checkForErrorCode0();
+void checkForErrorCode1();
+void checkForErrorCode2();
+void checkForErrorCode3();
+void checkForErrorCode4();
+void printError();
+
 int count;
 
 //FIRST_SET
@@ -52,16 +61,19 @@ string raw_input[100];
 //SET 
 set<string> rules_string_set;
 set<string>:: iterator rules_string_set_it;
-set<int> error_set;
-set<int>::iterator error_set_it;
 set<string> temp_set;
 set<string> first_set;
 set<string> non_terminal_called_for_first_set;
 set<string> terminal_set;
 set<string> non_terminal_set;
+set<string> :: iterator symb_it;
+set<int> error_code_set;
+set<int>::iterator error_code_set_it;
 set<string> non_terminal_called_set;
 set<string> follow_set;
 set<string> first_str_rule_set;
+set<string> grammar_rule_key_set;
+set<string> all_symb_grammar_set;
 
 //MAP
 map<string, list<list<string> > > grammar_rules_map;
@@ -87,6 +99,7 @@ int main ()
 	int isValid;
 
 	count = getInput();
+	validateInput();
 	//collectFirstSet();
 	//collectFollowSet();
 
@@ -114,6 +127,82 @@ int getInput()
 	parseInput(count);
 	printGrammarRulesMap();
 	return count;
+}
+
+void validateInput()
+{
+	checkForError();
+	printError();
+}
+
+void checkForError()
+{
+	checkForErrorCode0();
+	checkForErrorCode1();
+	checkForErrorCode2();
+	checkForErrorCode3();
+	checkForErrorCode4();
+}
+
+void checkForErrorCode0()
+{
+//check for syntax err
+
+}
+
+void checkForErrorCode1()
+{
+	for(symb_it = non_terminal_set.begin(); symb_it != non_terminal_set.end(); symb_it++)
+	{
+		if(grammar_rule_key_set.count(*symb_it) ==0)
+		{
+			error_code_set.insert(1);
+			break;
+		}
+	}
+}
+
+void checkForErrorCode2()
+{
+	for(symb_it = all_symb_grammar_set.begin(); symb_it != all_symb_grammar_set.end(); symb_it++)
+	{
+		if(((terminal_set.count((*symb_it)))==0) && ((non_terminal_set.count((*symb_it))) == 1))
+			error_code_set.insert(2);
+			break;
+	}
+}
+
+void checkForErrorCode3()
+{
+	for(symb_it = terminal_set.begin(); symb_it != terminal_set.end(); symb_it++)
+	{
+		if(grammar_rule_key_set.count(*symb_it)>0)
+		{
+			error_code_set.insert(3);
+			break;
+		}
+	}
+}
+
+
+void checkForErrorCode4()
+{
+	for(symb_it=terminal_set.begin(); symb_it != terminal_set.end(); symb_it++)
+	{
+		if(all_symb_grammar_set.count(*symb_it) == 0)
+		{
+			error_code_set.insert(4);
+			break;
+		}
+	}
+}
+
+void printError()
+{
+	for(error_code_set_it = error_code_set.begin(); error_code_set_it != error_code_set.end(); error_code_set_it++)
+	{
+		cout<<"ERROR CODE "<<*error_code_set_it<<endl;
+	}
 }
 
 void printRawInput(int count)
@@ -350,10 +439,12 @@ void printGrammarRulesMap()
 		for(multiple_rule_list_it = multiple_rule_list.begin(); multiple_rule_list_it != multiple_rule_list.end(); multiple_rule_list_it++)
 		{
 			cout<< (*grammar_rules_map_it).first<<"   " ;
+			grammar_rule_key_set.insert((*grammar_rules_map_it).first);
 			single_rule_list = *multiple_rule_list_it;
 			for(single_rule_list_it=single_rule_list.begin(); single_rule_list_it != single_rule_list.end(); single_rule_list_it++)
 			{
 				cout<<*single_rule_list_it<<"  ";
+				all_symb_grammar_set.insert((*single_rule_list_it));
 			}
 			cout<<endl;
 		}
