@@ -48,8 +48,7 @@ int stringcmp(string, string);
 void collectFollowSet();
 void findFollowSet(string);
 void printFollowSet();
-void getFirstStrRule(string);
-
+void getLastStrRule(string);
 
 //GLOBAL DATA STRUCTURES
 
@@ -100,8 +99,8 @@ int main ()
 
 	count = getInput();
 	validateInput();
-	collectFirstSet();
-	//collectFollowSet();
+	//collectFirstSet();
+	collectFollowSet();
 
 	return 0;
 } 
@@ -684,6 +683,10 @@ void findFollowSet(string non_terminal)
 	int to_break =0, i=0;
 	string cur_str;
 	string prev_str, first_rule_str;
+	list<string> single_rule_list;
+	list<string> :: iterator single_rule_list_it;
+	list<list<string> > multiple_rule_list;
+	list<list<string> >:: iterator multiple_rule_list_it;
 	
 	multiple_rule_list = grammar_rules_map[non_terminal];
 
@@ -717,15 +720,27 @@ void findFollowSet(string non_terminal)
 				{
 					prev_str = track_list.back();
 
-					cout<< "Prev str is "<<prev_str<<endl;
-					if(non_terminal_set.count(prev_str)>0)
+					getLastStrRule(prev_str);
+					first_str_rule_set.insert(prev_str);
+					for(symb_it= first_str_rule_set.begin(); symb_it != first_str_rule_set.end(); symb_it++ )
 					{
-						follow_set.clear();
-						follow_set.insert(cur_str);
-						follow_set_map[prev_str] = follow_set;
-						cout<<"Added in follow of "<<prev_str<<endl;
+						prev_str = *symb_it;	
+						cout<< "Prev str is "<<prev_str<<endl;
+						if(non_terminal_set.count(prev_str)>0)
+						{
+							follow_set.clear();
+							follow_set.insert(cur_str);
+							if(follow_set_map.count(prev_str)>0)
+							{
+								temp_set = follow_set_map[prev_str];
+								follow_set.insert(temp_set.begin(), temp_set.end());
+							}
+							follow_set_map[prev_str] = follow_set;
+							cout<<"Added in follow of "<<prev_str<<endl;
 
+						}
 					}
+					first_str_rule_set.clear();
 				  }
 			}
 			else
@@ -740,14 +755,29 @@ void findFollowSet(string non_terminal)
 					{
 						prev_str = track_list.back();
 						
-						if(non_terminal_set.count(prev_str)>0)
+						getLastStrRule(prev_str);
+						first_str_rule_set.insert(prev_str);
+						for(symb_it= first_str_rule_set.begin(); symb_it != first_str_rule_set.end(); symb_it++ )
 						{
-							//getFirstStrRule(cur_str);
-							follow_set.clear();
-							follow_set.insert(first_str_rule_set.begin(), first_str_rule_set.end());
-							follow_set_map[prev_str] = follow_set;
+							prev_str = *symb_it;	
+	
+							cout<< "Prev str "<<prev_str<<endl;			
+				
+							if(non_terminal_set.count(prev_str)>0)
+							{
+								cout<<"Inside mystery function"<<endl;
+								getLastStrRule(cur_str);
+								follow_set.clear();
+								follow_set.insert(first_str_rule_set.begin(), first_str_rule_set.end());
+								if(follow_set_map.count(prev_str)>0)
+								{
+									temp_set = follow_set_map[prev_str];
+									follow_set.insert(temp_set.begin(), temp_set.end());
+								}
+								follow_set_map[prev_str] = follow_set;
+							}
 						}
-
+						first_str_rule_set.clear();
 					}
 				}
 				if(follow_set.count("Z") !=0)
@@ -761,7 +791,7 @@ void findFollowSet(string non_terminal)
 	}
 }
 
-void getFirstStrRule(string cur_str)
+void getLastStrRule(string cur_str)
 {
 	list<list<string> > all_rule_list;
 	list<list<string> > ::iterator all_rule_list_it;	
@@ -774,6 +804,6 @@ void getFirstStrRule(string cur_str)
 	{
 	
 		a_rule_list = *all_rule_list_it;
-		first_str_rule_set.insert(a_rule_list.front());
+		first_str_rule_set.insert(a_rule_list.back());
 	}
 }
