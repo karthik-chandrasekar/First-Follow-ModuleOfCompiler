@@ -13,6 +13,8 @@ using namespace std;
 //FUNCTIONS;
 
 int getInput();
+void printRawInput(int);
+int  splitMultipleLines(int);
 void printGrammarArray(int);
 void parseInput(int);
 void parseSingleLine(string, int);
@@ -44,6 +46,7 @@ void getFirstStrRule(string);
 
 string grammar_array[100];
 char input_array[100][100];
+string raw_input[100];
 
 
 //SET 
@@ -102,14 +105,83 @@ int getInput()
 		getline(cin, line);
 		if (line.empty())
 			break;
-		grammar_array[count] = line;
+		raw_input[count] = line;
 		count++;	
 	}
+	printRawInput(count);
+	count = splitMultipleLines(count);
 	printGrammarArray(count);
-	parseInput(count);
-	//printInput();
-	printGrammarRulesMap();
+	/*parseInput(count);
+	printGrammarRulesMap();*/
 	return count;
+}
+
+void printRawInput(int count)
+{
+	int i;
+	for(i=0;i < count; i++)
+	{	
+		cout << "Raw Input" << "  " <<raw_input[i]<<endl;
+	}
+}
+
+int splitMultipleLines(int count)
+{
+	int i=0;
+	int j, line_length;
+	string line;
+	int start_word, end_word;
+	int to_break =0;
+	int new_row_count =0;
+	
+	while(i<count)
+	{
+		line = raw_input[i];
+		line_length = line.length();
+		i++;
+		start_word = 0;
+		end_word = 0;
+		j =0;
+		
+		if(to_break == 1)
+			break;
+	
+		cout << line <<endl;
+	
+		while(j < line_length)
+		{
+			if(to_break == 1)
+				break;
+
+			start_word = j;
+			while(line[j]!= '#')
+			{
+				j++;
+			}	
+			end_word = j;
+				
+			while(isspace(line[start_word]))
+				start_word++;
+			if(start_word == end_word)
+			{
+				break;
+			}
+			while(isspace(line[end_word]))
+				end_word--;
+			if(line[j+1]=='#')
+			{
+				to_break=1;
+			}
+			else if(start_word != end_word)
+			{
+				grammar_array[new_row_count] = line.substr(start_word, (end_word-start_word));
+				grammar_array[new_row_count][end_word] = '\0';
+				new_row_count ++;
+			}
+			j++;
+		}
+	}
+	return new_row_count;
 }
 
 void printGrammarArray(int count)
