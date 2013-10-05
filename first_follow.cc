@@ -102,7 +102,7 @@ int main ()
 
 	count = getInput();
 	validateInput();
-	//collectFirstSet();
+	collectFirstSet();
 	collectFollowSet();
 
 	return 0;
@@ -114,7 +114,7 @@ int getInput()
 
 	string line;
 	int count =0;
-	cout << "Enter grammar specification"<<endl;
+	//cout << "Enter grammar specification"<<endl;
 	while(true)
 	{
 		getline(cin, line);
@@ -123,9 +123,9 @@ int getInput()
 		raw_input[count] = line;
 		count++;	
 	}
-	printRawInput(count);
+	//printRawInput(count);
 	count = splitMultipleLines(count);
-	printGrammarArray(count);
+	//printGrammarArray(count);
 	parseInput(count);
 	printGrammarRulesMap();
 	return count;
@@ -391,7 +391,7 @@ void formRuleMap()
 	single_rule_list.pop_front();
 	is_list_empty = isListEmpty();
 	if (is_list_empty == 0)
-		single_rule_list.push_back("Z");
+		single_rule_list.push_back("#");
 	if (grammar_rules_map.count(key) == 0)
 	{
 		multiple_rule_list.push_back(single_rule_list);
@@ -444,17 +444,17 @@ void printGrammarRulesMap()
 		multiple_rule_list = (*grammar_rules_map_it).second;
 		for(multiple_rule_list_it = multiple_rule_list.begin(); multiple_rule_list_it != multiple_rule_list.end(); multiple_rule_list_it++)
 		{
-			cout<< (*grammar_rules_map_it).first<<"   " ;
+			//cout<< (*grammar_rules_map_it).first<<"   " ;
 			grammar_rule_key_set.insert((*grammar_rules_map_it).first);
 			single_rule_list = *multiple_rule_list_it;
-			if(stringcmp(single_rule_list.back(), "Z")==0)
+			if(stringcmp(single_rule_list.back(), "#")==0)
 				non_term_epsilon_map[(*grammar_rules_map_it).first] = 1;	
 			for(single_rule_list_it=single_rule_list.begin(); single_rule_list_it != single_rule_list.end(); single_rule_list_it++)
 			{
-				cout<<*single_rule_list_it<<"  ";
+				//cout<<*single_rule_list_it<<"  ";
 				all_symb_grammar_set.insert((*single_rule_list_it));
 			}
-			cout<<endl;
+			//cout<<endl;
 		}
 	}
 
@@ -488,8 +488,8 @@ void findFirstSet(string non_terminal)
 	
 	multiple_rule_list = grammar_rules_map[non_terminal];		
 
-	cout<<endl<<endl;
-	cout<<"BEGINS for "<<non_terminal<<endl;
+	//cout<<endl<<endl;
+	//cout<<"BEGINS for "<<non_terminal<<endl;
 		
 		for(multiple_rule_list_it = multiple_rule_list.begin(); multiple_rule_list_it != multiple_rule_list.end(); multiple_rule_list_it++)
 		{
@@ -512,13 +512,13 @@ void findFirstSet(string non_terminal)
 					
 					if(first_set_map.count(non_terminal) == 0)
 					{
-						cout << "Terminal "<<cur_str<<endl;
+						//cout << "Terminal "<<cur_str<<endl;
 						first_set.insert(cur_str);
 						first_set_map[non_terminal] = first_set;
 					}			
 					else
 					{
-						cout << "Terminal "<<cur_str<<endl;
+						//cout << "Terminal "<<cur_str<<endl;
 						first_set = first_set_map[non_terminal];
 						first_set.insert(cur_str);
 						first_set_map[non_terminal] = first_set;
@@ -530,7 +530,7 @@ void findFirstSet(string non_terminal)
 				{
 					if (first_set_map.count(cur_str)>0)
 					{
-						cout<< "Cur str first set already present "<< cur_str<<endl;
+						//cout<< "Cur str first set already present "<< cur_str<<endl;
 						temp_set = first_set_map[cur_str];
 						if (first_set_map.count(non_terminal)>0)
 							first_set = first_set_map[non_terminal];
@@ -542,8 +542,8 @@ void findFirstSet(string non_terminal)
 					{
 						if (non_terminal_set.count(cur_str) ==0)
 						{
-							cout << "EPSILON IDENTIFIED"<<endl;
-							temp_set.insert("Z");
+							//cout << "EPSILON IDENTIFIED"<<endl;
+							temp_set.insert("#");
 							if (first_set_map.count(non_terminal)>0)
 								first_set = first_set_map[non_terminal];
 							first_set.insert(temp_set.begin(), temp_set.end());
@@ -551,15 +551,15 @@ void findFirstSet(string non_terminal)
 						}
 						else
 						{
-							cout<<" "<<"RECURSION call "<< cur_str<< "   for   "<<non_terminal<<"  count is "<<count<<endl<<endl;
+							//cout<<" "<<"RECURSION call "<< cur_str<< "   for   "<<non_terminal<<"  count is "<<count<<endl<<endl;
 							count++;
 							findFirstSet(cur_str);
-							cout<< "OUT OF RECURSION   "<<cur_str<<"  for "<<non_terminal<<endl;
+							//cout<< "OUT OF RECURSION   "<<cur_str<<"  for "<<non_terminal<<endl;
 							temp_set = first_set_map[cur_str];
 							if(first_set_map.count(non_terminal) ==0)
 							{
 
-								cout<<"Adding first set for non terminal "<<non_terminal<<endl;
+								//cout<<"Adding first set for non terminal "<<non_terminal<<endl;
 								first_set.insert(temp_set.begin(), temp_set.end());
 								first_set_map[non_terminal] = first_set;
 			
@@ -567,7 +567,7 @@ void findFirstSet(string non_terminal)
 							else
 							{
 
-								cout<< "Adding first set for non terminal "<<non_terminal<<endl;
+								//cout<< "Adding first set for non terminal "<<non_terminal<<endl;
 								first_set = first_set_map[non_terminal];
 								first_set.insert(temp_set.begin(), temp_set.end());
 								first_set_map[non_terminal] = first_set;	
@@ -576,16 +576,16 @@ void findFirstSet(string non_terminal)
 
 						}
 					}
-					if (temp_set.count("Z") != 0)
+					if (temp_set.count("#") != 0)
 					{
-						cout<<"Z is present"<<endl;
+						//cout<<"# is present"<<endl;
 						to_remove_z = 0;
 					}
 					else
 					{
 						to_break = 1;
 						to_remove_z = 1;
-						cout<<"call to remove z function"<<endl;
+						//cout<<"call to remove z function"<<endl;
 					}
 				}
 				}
@@ -598,7 +598,7 @@ void findFirstSet(string non_terminal)
 
 void remove_z(string non_terminal)
 {
-	cout<<"Remove z called for non terminal "<<non_terminal<<endl;
+	//cout<<"Remove z called for non terminal "<<non_terminal<<endl;
 	set<string> first_set;
 	set<string> new_first_set;
 	set<string> :: iterator first_set_it;
@@ -606,9 +606,9 @@ void remove_z(string non_terminal)
 	first_set = first_set_map[non_terminal];
 	for(first_set_it = first_set.begin(); first_set_it != first_set.end(); first_set_it++)
 	{
-		if(stringcmp((*first_set_it), "Z") == 1)
+		if(stringcmp((*first_set_it), "#") == 1)
 		{
-			cout << "Z removed for non terminal"<<non_terminal<<endl;
+			//cout << "# removed for non terminal"<<non_terminal<<endl;
 			continue;
 		}
 		new_first_set.insert(*first_set_it);
@@ -619,7 +619,7 @@ void remove_z(string non_terminal)
 
 int stringcmp(string a, string b)
 {
-	cout << "Comparing strings "<<a<<" "<<b<<endl;
+	//cout << "Comparing strings "<<a<<" "<<b<<endl;
 
 	int i=0;
 	if(a.length() != b.length())
@@ -637,19 +637,31 @@ int stringcmp(string a, string b)
 
 void printFirstSet()
 {
-	cout<< "Print first set - starts"<<endl<<endl;
-	for(first_set_map_it = first_set_map.begin();first_set_map_it != first_set_map.end(); first_set_map_it++)
+
+	int comma_count = 0;
+	int first_set_size =0;
+
+	for(list_it = non_terminal_list.begin();list_it != non_terminal_list.end(); list_it++)
 	{
+		comma_count = 0;
+		first_set_size = 0;
 		
-		cout<<(*first_set_map_it).first<<"   ";
-		first_set = (*first_set_map_it).second;
+		cout<<"FIRST("<<(*list_it)<<")  =  { ";
+		first_set = first_set_map[(*list_it)];
+		
+		first_set_size = (first_set.size() - 1);			
+
 		for(rules_string_set_it = first_set.begin(); rules_string_set_it != first_set.end(); rules_string_set_it++)
 		{
-			cout<<*rules_string_set_it<< "  ";
+			cout<<*rules_string_set_it;
+			if (comma_count< first_set_size)
+			{
+				cout<<", ";
+				comma_count ++;
+			}
 		}
-		cout<<endl;
+		cout<<" }"<<endl;
 	}
-	cout << "Print first set - ends"<<endl<<endl;
 }
 
 
@@ -667,18 +679,29 @@ void collectFollowSet()
 
 void printFollowSet()
 {
-	cout<<"Print follow set -starts"<<endl<<endl;
-	for(follow_set_map_it = follow_set_map.begin(); follow_set_map_it != follow_set_map.end(); follow_set_map_it++)
+	int comma_count = 0;
+	int follow_set_size = 0;
+
+	for(list_it = non_terminal_list.begin(); list_it != non_terminal_list.end(); list_it++)
 	{
-		cout<<(*follow_set_map_it).first<<" ";
-		follow_set = (*follow_set_map_it).second;
+		comma_count = 0;
+		follow_set_size =0;
+
+		cout<<"FOLLOW("<<(*list_it)<<") = { ";
+		follow_set = follow_set_map[(*list_it)];
+		follow_set_size = (follow_set.size() - 1);
+
 		for(rules_string_set_it = follow_set.begin(); rules_string_set_it != follow_set.end(); rules_string_set_it++)
 		{
-			cout<<*rules_string_set_it<<"   ";
+			cout<<*rules_string_set_it;
+			if (comma_count < follow_set_size)
+			{
+				cout<<", ";
+				comma_count ++;
+			}
 		}
-		cout<<endl;
+		cout<<" }"<<endl;
 	}
-	cout<< "Print first set - ends"<<endl<<endl;
 }
 
 void findFollowSet(string non_terminal)
@@ -696,8 +719,8 @@ void findFollowSet(string non_terminal)
 	
 	multiple_rule_list = grammar_rules_map[non_terminal];
 
-	cout<<endl<<endl;
-	cout<< "BEGINS for "<<non_terminal<<endl;
+	//cout<<endl<<endl;
+	//cout<< "BEGINS for "<<non_terminal<<endl;
 	if(non_terminal_called_set.count(non_terminal))
 		return;
 	non_terminal_called_set.insert(non_terminal);
@@ -716,11 +739,11 @@ void findFollowSet(string non_terminal)
 
 			cur_str = *single_rule_list_it;
 			
-			cout<<"cur str is  "<< cur_str<<endl;
+			//cout<<"cur str is  "<< cur_str<<endl;
 				
 			if(terminal_set.count(cur_str)>0)
 			{
-				cout<<"Terminal  "<<cur_str<<endl;
+				//cout<<"Terminal  "<<cur_str<<endl;
 		
 				if(track_list.size()>0)
 				{
@@ -731,7 +754,7 @@ void findFollowSet(string non_terminal)
 					for(symb_it= first_str_rule_set.begin(); symb_it != first_str_rule_set.end(); symb_it++ )
 					{
 						prev_str = *symb_it;	
-						cout<< "Prev str is "<<prev_str<<endl;
+						//cout<< "Prev str is "<<prev_str<<endl;
 						if(non_terminal_set.count(prev_str)>0)
 						{
 							follow_set.clear();
@@ -742,7 +765,7 @@ void findFollowSet(string non_terminal)
 								follow_set.insert(temp_set.begin(), temp_set.end());
 							}
 							follow_set_map[prev_str] = follow_set;
-							cout<<"Added in follow of "<<prev_str<<endl;
+							//cout<<"Added in follow of "<<prev_str<<endl;
 
 						}
 					}
@@ -753,9 +776,9 @@ void findFollowSet(string non_terminal)
 			{
 				if(non_terminal_set.count(cur_str) !=0)
 				{
-					cout<<" "<<"Recursion calling     "<<cur_str<<"  for "<<non_terminal<<endl;
+					//cout<<" "<<"Recursion calling     "<<cur_str<<"  for "<<non_terminal<<endl;
 					findFollowSet(cur_str);
-					cout<< "Out of Recursion call    "<<cur_str<<"   for "<<non_terminal<<endl;
+					//cout<< "Out of Recursion call    "<<cur_str<<"   for "<<non_terminal<<endl;
 
 					if(track_list.size()>0)
 					{
@@ -767,11 +790,11 @@ void findFollowSet(string non_terminal)
 						{
 							prev_str = *symb_it;	
 	
-							cout<< "Prev str "<<prev_str<<endl;			
+							//cout<< "Prev str "<<prev_str<<endl;			
 				
 							if(non_terminal_set.count(prev_str)>0)
 							{
-								cout<<"Inside mystery function"<<endl;
+								//cout<<"Inside mystery function"<<endl;
 								getLastStrRule(cur_str);
 								follow_set.clear();
 								follow_set.insert(first_str_rule_set.begin(), first_str_rule_set.end());
@@ -786,9 +809,9 @@ void findFollowSet(string non_terminal)
 						first_str_rule_set.clear();
 					}
 				}
-				if(follow_set.count("Z") !=0)
+				if(follow_set.count("#") !=0)
 				{
-					cout<<"Z is present"<<endl;
+					//cout<<"# is present"<<endl;
 					continue;
 				}	
 			}
@@ -839,7 +862,7 @@ void addDollarForFollow(string cur_str)
 
 		if(non_terminal_set.count(*add_dollar_set_it)==0)
 			continue;
-		cout<< "Adding $ for "<<*add_dollar_set_it<<endl;
+		//cout<< "Adding $ for "<<*add_dollar_set_it<<endl;
 		follow_set.clear();
 		follow_set = follow_set_map[*add_dollar_set_it];
 		follow_set.insert("$");
