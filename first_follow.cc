@@ -25,6 +25,7 @@ void formNonTerminalList();
 void formRuleMap();
 void printGrammarRulesMap();
 int isListEmpty();
+void addDollarForFollow(string);
 
 void validateInput();
 void checkForError();
@@ -73,6 +74,7 @@ set<string> follow_set;
 set<string> first_str_rule_set;
 set<string> grammar_rule_key_set;
 set<string> all_symb_grammar_set;
+set<string> non_term_track_set;
 
 //MAP
 map<string, list<list<string> > > grammar_rules_map;
@@ -81,6 +83,7 @@ map<string, set<string> > first_set_map;
 map<string, set<string> >:: iterator first_set_map_it;
 map<string, set<string> > follow_set_map;
 map<string, set<string> >:: iterator follow_set_map_it;
+map<string, int> non_term_epsilon_map;
 
 //LIST
 list<string> terminal_list;
@@ -444,6 +447,8 @@ void printGrammarRulesMap()
 			cout<< (*grammar_rules_map_it).first<<"   " ;
 			grammar_rule_key_set.insert((*grammar_rules_map_it).first);
 			single_rule_list = *multiple_rule_list_it;
+			if(stringcmp(single_rule_list.back(), "Z")==0)
+				non_term_epsilon_map[(*grammar_rules_map_it).first] = 1;	
 			for(single_rule_list_it=single_rule_list.begin(); single_rule_list_it != single_rule_list.end(); single_rule_list_it++)
 			{
 				cout<<*single_rule_list_it<<"  ";
@@ -656,6 +661,7 @@ void collectFollowSet()
 	{
 		findFollowSet(*list_it);
 	}
+	addDollarForFollow(non_terminal_list.front());
 	printFollowSet();
 }
 
@@ -719,7 +725,7 @@ void findFollowSet(string non_terminal)
 				if(track_list.size()>0)
 				{
 					prev_str = track_list.back();
-
+					non_term_track_set.clear();
 					getLastStrRule(prev_str);
 					first_str_rule_set.insert(prev_str);
 					for(symb_it= first_str_rule_set.begin(); symb_it != first_str_rule_set.end(); symb_it++ )
@@ -754,7 +760,7 @@ void findFollowSet(string non_terminal)
 					if(track_list.size()>0)
 					{
 						prev_str = track_list.back();
-						
+						non_term_track_set.clear();
 						getLastStrRule(prev_str);
 						first_str_rule_set.insert(prev_str);
 						for(symb_it= first_str_rule_set.begin(); symb_it != first_str_rule_set.end(); symb_it++ )
@@ -796,14 +802,66 @@ void getLastStrRule(string cur_str)
 	list<list<string> > all_rule_list;
 	list<list<string> > ::iterator all_rule_list_it;	
 	list<string> a_rule_list;
+	string current_str;
+
+	if (non_term_track_set.count(cur_str) >0)
+		return;
+	non_term_track_set.insert(cur_str);
 
 	all_rule_list = grammar_rules_map[cur_str];
 	first_str_rule_set.clear();
 	
 	for(all_rule_list_it = all_rule_list.begin(); all_rule_list_it != all_rule_list.end(); all_rule_list_it++)
 	{
-	
 		a_rule_list = *all_rule_list_it;
-		first_str_rule_set.insert(a_rule_list.back());
+		current_str = a_rule_list.back();
+		if (non_terminal_set.count(current_str)>0)
+		{	
+			getLastStrRule(current_str);
+		}
+		first_str_rule_set.insert(current_str);
 	}
 }
+
+void addDollarForFollow(string cur_str)
+{
+	cout << "Inside add dollar"<<endl<<endl;
+
+	list<list<string> > all_rule_list;
+	list<list<string> > ::iterator all_rule_list_it;	
+	list<string> a_rule_list;
+	list<string> :: iterator a_rule_list_it;
+	set<string> add_dollar_set;
+	set<string> :: iterator add_dollar_set_it;
+
+	all_rule_list = grammar_rules_map[cur_str];
+	non_term_epsilon_map[cur_str] = 1;
+	add_dollar_set.insert(cur_str);
+
+	for(all_rule_list_it = all_rule_list.begin(); all_rule_list_it != all_rule_list.end(); all_rule_list_it++)
+	{
+		
+		a_rule_list = *all_rule_list_it;
+		while(1)
+		{
+			if(non_term_epsilon_map.count(a_rule_list.back())>0)
+			{
+				cout<<"Reached inside"<<endl;	
+				add_dollar_set.insert(a_rule_list.back());
+				a_rule_list.pop_back();
+			}
+			break;
+		}
+	}
+	
+	for(add_dollar_set_it = add_dollar_set.begin(); add_dollar_set_it != add_dollar_set.end(); add_dollar_set_it++)
+	{
+
+		cout<< "Adding $ for "<<*add_dollar_set_it<<endl;
+		follow_set.clear();
+		follow_set = follow_set_map[*add_dollar_set_it];
+		follow_set.insert("$");
+		follow_set_map[*add_dollar_set_it] = follow_set;
+	}	
+}
+
