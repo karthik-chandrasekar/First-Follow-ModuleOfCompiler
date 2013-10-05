@@ -823,45 +823,28 @@ void getLastStrRule(string cur_str)
 	}
 }
 
+
 void addDollarForFollow(string cur_str)
 {
-	cout << "Inside add dollar"<<endl<<endl;
-
-	list<list<string> > all_rule_list;
-	list<list<string> > ::iterator all_rule_list_it;	
-	list<string> a_rule_list;
-	list<string> :: iterator a_rule_list_it;
-	set<string> add_dollar_set;
 	set<string> :: iterator add_dollar_set_it;
 
-	all_rule_list = grammar_rules_map[cur_str];
-	non_term_epsilon_map[cur_str] = 1;
-	add_dollar_set.insert(cur_str);
+	first_str_rule_set.clear();
+	non_term_track_set.clear();
 
-	for(all_rule_list_it = all_rule_list.begin(); all_rule_list_it != all_rule_list.end(); all_rule_list_it++)
-	{
-		
-		a_rule_list = *all_rule_list_it;
-		while(1)
-		{
-			if(non_term_epsilon_map.count(a_rule_list.back())>0)
-			{
-				cout<<"Reached inside"<<endl;	
-				add_dollar_set.insert(a_rule_list.back());
-				a_rule_list.pop_back();
-			}
-			break;
-		}
-	}
-	
-	for(add_dollar_set_it = add_dollar_set.begin(); add_dollar_set_it != add_dollar_set.end(); add_dollar_set_it++)
+	getLastStrRule(cur_str);
+	first_str_rule_set.insert(cur_str);	
+
+	for(add_dollar_set_it = first_str_rule_set.begin(); add_dollar_set_it != first_str_rule_set.end(); add_dollar_set_it++)
 	{
 
+		if(non_terminal_set.count(*add_dollar_set_it)==0)
+			continue;
 		cout<< "Adding $ for "<<*add_dollar_set_it<<endl;
 		follow_set.clear();
 		follow_set = follow_set_map[*add_dollar_set_it];
 		follow_set.insert("$");
 		follow_set_map[*add_dollar_set_it] = follow_set;
-	}	
+
+	}
 }
 
