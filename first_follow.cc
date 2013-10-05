@@ -100,7 +100,7 @@ int main ()
 
 	count = getInput();
 	validateInput();
-	//collectFirstSet();
+	collectFirstSet();
 	//collectFollowSet();
 
 	return 0;
@@ -199,10 +199,14 @@ void checkForErrorCode4()
 
 void printError()
 {
+	int to_exit=0;
 	for(error_code_set_it = error_code_set.begin(); error_code_set_it != error_code_set.end(); error_code_set_it++)
 	{
 		cout<<"ERROR CODE "<<*error_code_set_it<<endl;
+		to_exit = 1;
 	}
+	if (to_exit == 1)
+		exit(1);
 }
 
 void printRawInput(int count)
@@ -464,7 +468,7 @@ void collectFirstSet()
 
 void findFirstSet(string non_terminal)
 {
-
+	//Local DS
 	int to_break = 0;
 	int to_remove_z = 0;
 	int i;
@@ -491,15 +495,16 @@ void findFirstSet(string non_terminal)
 			{
 				if(to_break ==1)
 					break;
-			
+		
+				to_remove_z = 0;
+				to_break = 0;	
+				first_set.clear();
+				temp_set.clear();
+
 				cur_str = *single_rule_list_it;
-			
-					
 
 				if (terminal_set.count(cur_str) > 0)
 				{
-					first_set.clear();
-					temp_set.clear();
 					
 					if(first_set_map.count(non_terminal) == 0)
 					{
@@ -509,6 +514,7 @@ void findFirstSet(string non_terminal)
 					}			
 					else
 					{
+						cout << "Terminal "<<cur_str<<endl;
 						first_set = first_set_map[non_terminal];
 						first_set.insert(cur_str);
 						first_set_map[non_terminal] = first_set;
@@ -520,7 +526,7 @@ void findFirstSet(string non_terminal)
 				{
 					if (first_set_map.count(cur_str)>0)
 					{
-						cout<< "Non terminal first set already present "<< cur_str<<endl;
+						cout<< "Cur str first set already present "<< cur_str<<endl;
 						temp_set = first_set_map[cur_str];
 						if (first_set_map.count(non_terminal)>0)
 							first_set = first_set_map[non_terminal];
@@ -549,7 +555,7 @@ void findFirstSet(string non_terminal)
 							if(first_set_map.count(non_terminal) ==0)
 							{
 
-								cout<<"Adding first set inside if"<<endl;
+								cout<<"Adding first set for non terminal "<<non_terminal<<endl;
 								first_set.insert(temp_set.begin(), temp_set.end());
 								first_set_map[non_terminal] = first_set;
 			
@@ -557,7 +563,7 @@ void findFirstSet(string non_terminal)
 							else
 							{
 
-								cout<< "Adding first set inside already exist"<<endl;
+								cout<< "Adding first set for non terminal "<<non_terminal<<endl;
 								first_set = first_set_map[non_terminal];
 								first_set.insert(temp_set.begin(), temp_set.end());
 								first_set_map[non_terminal] = first_set;	
@@ -565,20 +571,21 @@ void findFirstSet(string non_terminal)
 							}
 
 						}
-						if (temp_set.count("Z") != 0)
-						{
-							cout<<"Z is present"<<endl;
-							to_remove_z = 0;
-						}
-						else
-						{
-							to_break = 1;
-							to_remove_z = 1;
-						}
+					}
+					if (temp_set.count("Z") != 0)
+					{
+						cout<<"Z is present"<<endl;
+						to_remove_z = 0;
+					}
+					else
+					{
+						to_break = 1;
+						to_remove_z = 1;
+						cout<<"call to remove z function"<<endl;
 					}
 				}
 				}
-				if(to_remove_z)
+				if(to_remove_z == 1)
 				{
 					remove_z(non_terminal);
 				}
@@ -587,6 +594,7 @@ void findFirstSet(string non_terminal)
 
 void remove_z(string non_terminal)
 {
+	cout<<"Remove z called for non terminal "<<non_terminal<<endl;
 	set<string> first_set;
 	set<string> new_first_set;
 	set<string> :: iterator first_set_it;
@@ -595,7 +603,10 @@ void remove_z(string non_terminal)
 	for(first_set_it = first_set.begin(); first_set_it != first_set.end(); first_set_it++)
 	{
 		if(stringcmp((*first_set_it), "Z") == 1)
+		{
+			cout << "Z removed for non terminal"<<non_terminal<<endl;
 			continue;
+		}
 		new_first_set.insert(*first_set_it);
 	}
 	first_set_map[non_terminal] = new_first_set;
@@ -604,6 +615,8 @@ void remove_z(string non_terminal)
 
 int stringcmp(string a, string b)
 {
+	cout << "Comparing strings "<<a<<" "<<b<<endl;
+
 	int i=0;
 	if(a.length() != b.length())
 		return 0;
