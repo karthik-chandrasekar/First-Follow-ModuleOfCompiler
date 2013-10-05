@@ -88,7 +88,7 @@ int main ()
 
 	count = getInput();
 	//collectFirstSet();
-	collectFollowSet();
+	//collectFollowSet();
 
 	return 0;
 } 
@@ -111,8 +111,8 @@ int getInput()
 	printRawInput(count);
 	count = splitMultipleLines(count);
 	printGrammarArray(count);
-	/*parseInput(count);
-	printGrammarRulesMap();*/
+	parseInput(count);
+	printGrammarRulesMap();
 	return count;
 }
 
@@ -132,6 +132,7 @@ int splitMultipleLines(int count)
 	string line;
 	int start_word, end_word;
 	int to_break =0;
+	int local_break;
 	int new_row_count =0;
 	
 	while(i<count)
@@ -141,30 +142,33 @@ int splitMultipleLines(int count)
 		i++;
 		start_word = 0;
 		end_word = 0;
+		local_break =0;
 		j =0;
 		
 		if(to_break == 1)
 			break;
 	
-		cout << line <<endl;
 	
 		while(j < line_length)
 		{
-			if(to_break == 1)
+			if(to_break == 1 || local_break ==1)
 				break;
 
 			start_word = j;
-			while(line[j]!= '#')
+			while(line[j]!= '#' && j<line_length)
 			{
 				j++;
 			}	
 			end_word = j;
 				
 			while(isspace(line[start_word]))
-				start_word++;
-			if(start_word == end_word)
 			{
-				break;
+				start_word++;
+				if(start_word == end_word)
+				{
+					local_break =1;
+					break;
+				}
 			}
 			while(isspace(line[end_word]))
 				end_word--;
@@ -217,6 +221,7 @@ void parseSingleLine(string single_line, int row_count)
 
 	while(i < string_length)
 	{
+
 		if(single_line[i] == '\0')
 			break;
 	
