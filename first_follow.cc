@@ -534,6 +534,7 @@ void findFirstSet(string non_terminal)
 	int i;
 	string cur_str;
 	set<string> temp_set;
+	set<string> first_set;
 	int count = 0;
 	int rule_count =0;
 	list<string> single_rule_list;
@@ -556,6 +557,7 @@ void findFirstSet(string non_terminal)
 		for(multiple_rule_list_it = multiple_rule_list.begin(); multiple_rule_list_it != multiple_rule_list.end(); multiple_rule_list_it++)
 		{
 			to_break =0;
+			to_remove_z = 0;
 			single_rule_list = *multiple_rule_list_it;
 			cout<<"rule count for non terminal  "<< non_terminal<< "  is  "<<rule_count<<endl<<endl;
 
@@ -567,7 +569,6 @@ void findFirstSet(string non_terminal)
 					break;
 				}
 	
-				to_remove_z = 0;
 				to_break = 0;	
 				first_set.clear();
 				temp_set.clear();
@@ -645,10 +646,14 @@ void findFirstSet(string non_terminal)
 
 						}
 					}
-					if (first_set.count("#") != 0)
+					if (temp_set.count("#") != 0)
 					{
 						cout<<"# is present for  "<<non_terminal<<endl;
 						to_remove_z = 0;
+					}
+					else if(to_break ==1)
+					{
+						to_remove_z = 1;
 					}
 					else
 					{
@@ -668,7 +673,7 @@ void findFirstSet(string non_terminal)
 
 void remove_z(string non_terminal)
 {
-	//cout<<"Remove z called for non terminal "<<non_terminal<<endl;
+	cout<<"REMOVEEEE Z called for non terminal "<<non_terminal<<endl;
 	set<string> first_set;
 	set<string> new_first_set;
 	set<string> :: iterator first_set_it;
@@ -678,7 +683,7 @@ void remove_z(string non_terminal)
 	{
 		if(stringcmp((*first_set_it), "#") == 1)
 		{
-			//cout << "# removed for non terminal"<<non_terminal<<endl;
+			cout << "# removed for non terminal"<<non_terminal<<endl;
 			continue;
 		}
 		new_first_set.insert(*first_set_it);
