@@ -754,7 +754,6 @@ void collectFollowSet()
 	for(list_it = non_terminal_list.begin(); list_it != non_terminal_list.end(); list_it++)
 	{
 		findFollowSet(*list_it);
-		break;
 	}
 	addDollarForFollow(non_terminal_list.front());
 	printFollowSet();
@@ -802,8 +801,8 @@ void findFollowSet(string non_terminal)
 	
 	multiple_rule_list = grammar_rules_map[non_terminal];
 
-	cout<<endl<<endl;
-	cout<< "BEGINS for "<<non_terminal<<endl;
+	//cout<<endl<<endl;
+	//cout<< "BEGINS for "<<non_terminal<<endl;
 	if(non_terminal_called_set.count(non_terminal))
 		return;
 	non_terminal_called_set.insert(non_terminal);
@@ -822,7 +821,7 @@ void findFollowSet(string non_terminal)
 
 			cur_str = *single_rule_list_it;
 			
-			cout<<"cur str is  "<< cur_str<<endl;
+			//cout<<"cur str is  "<< cur_str<<endl;
 				
 			if(terminal_set.count(cur_str)>0)
 			{
@@ -831,7 +830,6 @@ void findFollowSet(string non_terminal)
 				if(track_list.size()>0)
 				{
 					prev_str = track_list.back();
-					non_term_track_set.clear();
 					getLastStrRule(prev_str);
 					first_str_rule_set.insert(prev_str);
 					for(symb_it= first_str_rule_set.begin(); symb_it != first_str_rule_set.end(); symb_it++ )
@@ -865,15 +863,15 @@ void findFollowSet(string non_terminal)
 						prev_str = track_list.back();
 						if(non_terminal_set.count(prev_str))
 						{
-							cout<<"prev str "<< prev_str<<endl;
+							//cout<<"prev str "<< prev_str<<endl;
 							getLastStrRule(prev_str);
 							first_str_rule_set.insert(prev_str);
-							cout<< "Adding prev str "<<prev_str<<endl;
+							//cout<< "Adding prev str "<<prev_str<<endl;
 							for(symb_it= first_str_rule_set.begin(); symb_it != first_str_rule_set.end(); symb_it++ )
 							{
 								prev_str = *symb_it;	
 		
-								cout<< "Prev str "<<prev_str<<endl;			
+								//cout<< "Prev str "<<prev_str<<endl;			
 					
 								if(non_terminal_set.count(prev_str)>0)
 								{
@@ -906,7 +904,7 @@ void findFollowSet(string non_terminal)
 set<string> getPredictedFirstSet(string current_str, string non_termi)
 {
 
-	cout << "INSIDEEEE PREDICTED FIRST SET "<<endl<<endl;
+	//cout << "INSIDEEEE PREDICTED FIRST SET "<<endl<<endl;
 
 	list<string> single_rule_list;
 	list<string> :: iterator single_rule_list_it;
@@ -918,8 +916,8 @@ set<string> getPredictedFirstSet(string current_str, string non_termi)
 	set<string> final_follow_set;
 	int start_collecting = 0; 
 
-	cout<<"NON TERMI IS  "<<non_termi<<endl;
-	cout<<"CUR STRING IS  "<<current_str<<endl;
+	//cout<<"NON TERMI IS  "<<non_termi<<endl;
+	//cout<<"CUR STRING IS  "<<current_str<<endl;
 
 	multiple_rule_list = grammar_rules_map[non_termi];
 
@@ -934,6 +932,9 @@ set<string> getPredictedFirstSet(string current_str, string non_termi)
 		{
 
 			cur_str = *single_rule_list_it;
+		
+			if((stringcmp(cur_str, "#")) == 1)
+				continue;
 			
 			if (cur_str.compare(current_str) ==0)
 			{
@@ -942,7 +943,7 @@ set<string> getPredictedFirstSet(string current_str, string non_termi)
 			
 			if(start_collecting ==1)
 			{
-				cout<< "started collecting for " <<cur_str<<endl;
+				//cout<< "started collecting for " <<cur_str<<endl;
 				temp_set = first_set_map[cur_str];
 				final_follow_set.insert(temp_set.begin(), temp_set.end());
 				
@@ -977,59 +978,44 @@ void getLastStrRule(string cur_str)
 	
 	for(all_rule_list_it = all_rule_list.begin(); all_rule_list_it != all_rule_list.end(); all_rule_list_it++)
 	{
-		cout<< "Inside outermost loop"<<endl;
+		//cout<< "Inside outermost loop"<<endl;
 		a_rule_list = *all_rule_list_it;
+		first_str_rule_set.insert(a_rule_list.back());
 		for(a_rule_list_it = a_rule_list.rbegin(); a_rule_list_it != a_rule_list.rend(); a_rule_list_it++)		
 		{
 			current_str = *a_rule_list_it;
-			cout << "Inside inner most loop and cur str is "<<current_str<<endl;
+			//cout << "Inside inner most loop and cur str is "<<current_str<<endl;
 			if (non_terminal_set.count(current_str)>0)
 			{
 				temp_set.clear();
 				temp_set = first_set_map[current_str];
 				if(temp_set.count("#")>0)
 				{
-					first_str_rule_set.insert(current_str);
+					//first_str_rule_set.insert(current_str);
 					continue;
 				}
 				else
 					break;	
 			}
+			else
+				break;
 		}
-
-		for(forw_a_rule_list_it = a_rule_list.begin(); forw_a_rule_list_it != a_rule_list.end(); forw_a_rule_list_it++)		
+		if (non_terminal_set.count(current_str)>0)
 		{
-			current_str = *forw_a_rule_list_it;
-			cout << "Inside inner most loop and cur str is "<<current_str<<endl;
-			if (non_terminal_set.count(current_str)>0)
-			{
-				temp_set.clear();
-				temp_set = first_set_map[current_str];
-				if(temp_set.count("#")>0)
-				{
-					first_str_rule_set.insert(current_str);
-					continue;
-				}
-				else
-					break;	
-			}
+			cout<<"cur string "<<cur_str<<endl;
+			cout<<"Current string "<<current_str<<endl;
+			first_str_rule_set.insert(current_str);
 		}
-
 		
 	}
-
-
-
-
 }
 
 
-void addDollarForFollow(string cur_str)
+void aaddDollarForFollow(string cur_str)
 {
 	set<string> :: iterator add_dollar_set_it;
 
 	first_str_rule_set.clear();
-	non_term_track_set.clear();
 
 	getLastStrRule(cur_str);
 	first_str_rule_set.insert(cur_str);	
@@ -1048,3 +1034,62 @@ void addDollarForFollow(string cur_str)
 	}
 }
 
+void addDollarForFollow(string start_sym)
+{
+	
+	list<string> single_rule_list;
+	list<string> :: iterator single_rule_list_it;
+	list<list<string> > multiple_rule_list;
+	list<list<string> >:: iterator multiple_rule_list_it;
+	
+	list<string> :: reverse_iterator r_rule_list_it;
+
+	set<string> temp_first_set;
+	set<string> temp_follow_set;
+	string cur_str;
+
+	multiple_rule_list = grammar_rules_map[start_sym];
+	for(multiple_rule_list_it = multiple_rule_list.begin(); multiple_rule_list_it != multiple_rule_list.end(); multiple_rule_list_it++)
+	{
+		
+		single_rule_list.clear();
+
+		single_rule_list = *multiple_rule_list_it;
+
+		for(r_rule_list_it=single_rule_list.rbegin(); r_rule_list_it != single_rule_list.rend(); r_rule_list_it++)
+		{
+
+			cur_str = *r_rule_list_it;
+		
+			//cout<<"cur str  "<<cur_str<<endl;
+			
+			if(non_terminal_set.count(cur_str) ==0)
+				break;
+		
+			temp_first_set = first_set_map[cur_str];
+
+			if(temp_first_set.count("#")>0 )
+			{
+				temp_follow_set = follow_set_map[cur_str];
+				temp_follow_set.insert("$");
+				follow_set_map[cur_str] = temp_follow_set;
+			}
+			else
+			{
+				break;
+			}
+
+		 }
+			
+		 if(non_terminal_set.count(cur_str)>0)
+		 {
+		 	temp_follow_set = follow_set_map[cur_str];
+		 	temp_follow_set.insert("$");
+			follow_set_map[cur_str] = temp_follow_set;
+		 }
+		
+	}
+	temp_follow_set = follow_set_map[start_sym];
+	temp_follow_set.insert("$");
+	follow_set_map[start_sym] = temp_follow_set;
+}
